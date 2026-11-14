@@ -2,7 +2,9 @@
 <html lang="en">
 <head>
 <meta charset="utf-8">
-<meta name="viewport" content="width=device-width, initial-scale=1">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<meta name="theme-color" content="#f6f7f9" media="(prefers-color-scheme: light)">
+<meta name="theme-color" content="#101216" media="(prefers-color-scheme: dark)">
 <!-- Hard guarantee that nothing leaves the page: no network connections, no external scripts/styles/images, no form posts. -->
 <meta http-equiv="Content-Security-Policy" content="default-src 'none'; script-src 'unsafe-inline'; style-src 'unsafe-inline'; img-src data:; connect-src 'none'; form-action 'none'; base-uri 'none'">
 <meta name="referrer" content="no-referrer">
@@ -71,7 +73,7 @@ body {
   color: var(--text);
   font: 15px/1.5 system-ui, -apple-system, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
 }
-.wrap { max-width: 920px; margin: 0 auto; padding: 24px 16px 64px; }
+.wrap { max-width: 920px; margin: 0 auto; padding: 24px max(16px, env(safe-area-inset-right)) calc(64px + env(safe-area-inset-bottom)) max(16px, env(safe-area-inset-left)); }
 h1 { font-size: 1.5rem; line-height: 1.25; margin: 0 0 4px; letter-spacing: -.01em; }
 h2 { font-size: 1.05rem; margin: 0 0 12px; }
 p { margin: 0 0 12px; }
@@ -109,7 +111,7 @@ header.top { margin-bottom: 20px; }
 .drop .pick { color: var(--accent); text-decoration: underline; }
 .drop .hint { display: block; margin-top: 6px; }
 .compact .drop { padding: 14px 16px; }
-.compact .drop .hint { display: none; }
+.compact .drop > span { display: none; }
 
 .msg { margin-top: 12px; padding: 12px 14px; border-radius: var(--radius); }
 .msg.error { background: var(--danger-soft); color: var(--danger); border: 1px solid color-mix(in srgb, var(--danger) 30%, transparent); }
@@ -154,7 +156,7 @@ button:disabled { opacity: .5; cursor: not-allowed; }
 .warn { background: var(--warn-soft); color: var(--warn-text); border-radius: var(--radius); padding: 10px 14px; margin-bottom: 12px; }
 
 /* Toolbar */
-.toolbar { display: flex; flex-wrap: wrap; gap: 10px; align-items: end; margin-bottom: 12px; }
+.toolbar { display: flex; flex-wrap: wrap; gap: 10px; align-items: end; margin-bottom: 8px; }
 .field { display: flex; flex-direction: column; gap: 4px; font-size: .8rem; color: var(--muted); }
 .field.grow { flex: 1 1 200px; }
 input[type="search"], select {
@@ -166,10 +168,10 @@ input[type="search"], select {
 }
 .check { display: inline-flex; align-items: center; gap: 6px; font-size: .9rem; color: var(--text); min-height: 38px; cursor: pointer; }
 .check input { width: 18px; height: 18px; margin: 0; accent-color: var(--accent); }
-.actions-bar { display: flex; flex-wrap: wrap; gap: 8px; margin-left: auto; }
+.actions-bar { display: flex; flex-wrap: wrap; gap: 8px; justify-content: flex-end; margin-top: 16px; }
 
 /* Tabs */
-.tabs { display: flex; gap: 4px; border-bottom: 1px solid var(--border); overflow-x: auto; scrollbar-width: none; }
+.tabs { display: flex; gap: 4px; border-bottom: 1px solid var(--border); position: sticky; top: 0; z-index: 5; background: var(--bg); padding-top: env(safe-area-inset-top); }
 .tab {
   border: 0; border-bottom: 3px solid transparent; border-radius: 0;
   background: none; color: var(--muted);
@@ -197,10 +199,48 @@ input[type="search"], select {
 .keep[aria-pressed="true"] { background: var(--keep-soft); border-color: var(--keep); color: var(--keep); }
 .empty { padding: 24px 14px; text-align: center; color: var(--muted); }
 .pager { display: flex; align-items: center; justify-content: space-between; gap: 8px; padding: 10px 14px; border-top: 1px solid var(--border); background: var(--surface-2); font-size: .85rem; color: var(--muted); }
+.howto { margin-top: 12px; }
+.howto > summary { cursor: pointer; padding: 12px 14px; font-weight: 600; }
+.howto ol { margin: 0; padding: 0 14px 12px 34px; }
+.howto li { margin-bottom: 4px; }
+.drop .touch { display: none; }
+@media (hover: none) and (pointer: coarse) {
+  .drop .touch { display: inline; }
+  .drop .mouse { display: none; }
+}
+
+/* Phone layout */
 @media (max-width: 560px) {
-  .row { flex-wrap: wrap; }
-  .row-actions { width: 100%; justify-content: flex-start; }
-  .actions-bar { margin-left: 0; }
+  .wrap { padding-top: 16px; }
+  h1 { font-size: 1.3rem; }
+  /* 16px inputs stop iOS from zooming the page on focus */
+  input[type="search"], select { font-size: 16px; min-height: 44px; }
+  .btn, button, .done-chk, .check { min-height: 44px; }
+  button.link { min-height: 0; padding: 10px 4px; }
+
+  .stats { grid-template-columns: repeat(4, minmax(0, 1fr)); gap: 6px; margin: 14px 0 10px; }
+  .stat { padding: 8px 8px; }
+  .stat dt { font-size: .68rem; line-height: 1.2; min-height: 2.4em; }
+  .stat dd { font-size: 1.05rem; }
+  .stat.hl { padding: 12px 14px; }
+  .stat.hl dt { font-size: .8rem; min-height: 0; }
+  .stat.hl dd { font-size: 1.6rem; }
+
+  .session { padding: 4px 14px; margin-bottom: 10px; justify-content: space-between; }
+  .toolbar .lbl { position: absolute; width: 1px; height: 1px; overflow: hidden; clip: rect(0 0 0 0); white-space: nowrap; }
+  .toolbar .field.grow { flex-basis: 100%; }
+  .toolbar .field:not(.grow) { flex: 1 1 0; min-width: 0; }
+
+  .tabs { gap: 0; margin: 0 -16px; padding-left: 8px; padding-right: 8px; }
+  .tab { flex: 1 1 0; min-width: 0; white-space: normal; padding: 8px 4px; font-size: .8rem; line-height: 1.25; flex-direction: column; gap: 2px; }
+  .tab .n { margin-left: 0; }
+
+  .row { padding: 12px 14px; }
+  .row.marks { flex-wrap: wrap; gap: 10px; }
+  .row.marks .row-actions { width: 100%; display: grid; grid-template-columns: 1fr 1fr 1.5fr; }
+  .row.marks .row-actions > * { width: 100%; justify-content: center; }
+  .pager { padding: 8px 10px; }
+  .actions-bar > * { flex: 1 1 0; white-space: normal; }
 }
 
 details.sec { margin-top: 14px; }
@@ -223,14 +263,27 @@ footer ol { padding-left: 20px; }
   <section id="loader" aria-labelledby="loader-h">
     <h2 id="loader-h" class="vh">Load your export</h2>
     <label class="drop" id="drop">
-      <input type="file" id="file" class="vh" multiple accept=".zip,.json,.html,application/zip,application/json">
-      <strong>Drop your export here</strong>
-      <span>the .zip, the unzipped folder, or the JSON files &middot; <span class="pick">or choose files</span></span>
+      <input type="file" id="file" class="vh" multiple accept=".zip,.json,.html,application/zip,application/x-zip-compressed,application/json,text/html">
+      <strong class="mouse">Drop your export here</strong>
+      <span class="mouse">the .zip, the unzipped folder, or the JSON files &middot; <span class="pick">or choose files</span></span>
+      <strong class="touch">Tap to choose your export</strong>
+      <span class="touch">the .zip Instagram sent you, or the JSON files</span>
       <span class="hint muted small">Needs <code>followers_1.json</code> (and any <code>followers_2.json</code>…) plus <code>following.json</code> from <code>connections/followers_and_following/</code>. Drop them all at once.</span>
     </label>
     <div id="error" class="msg error" role="alert" hidden></div>
     <div id="status" class="msg info" role="status" hidden></div>
     <div id="loaded" class="loaded small" hidden></div>
+    <details class="card howto" id="howto">
+      <summary>How to get your export from Instagram</summary>
+      <ol class="small">
+        <li>In the Instagram app: your profile &rarr; menu (&#9776;) &rarr; <b>Accounts Center</b>.</li>
+        <li><b>Your information and permissions</b> &rarr; <b>Export your information</b> &rarr; <b>Create export</b>.</li>
+        <li>Choose your profile, then <b>Export to device</b>.</li>
+        <li><b>Customize information</b>: clear everything except <b>Followers and following</b>.</li>
+        <li><b>Date range</b>: All time. <b>Format</b>: <b>JSON</b> (not HTML).</li>
+        <li><b>Start export</b>. When Instagram emails you, download the .zip to this device, then come back here and choose it.</li>
+      </ol>
+    </details>
   </section>
 
   <section id="results" hidden aria-label="Results">
@@ -243,22 +296,18 @@ footer ol { padding-left: 20px; }
     <div class="warn" id="warn" role="status" hidden></div>
 
     <div class="toolbar">
-      <label class="field grow">Search
+      <label class="field grow"><span class="lbl">Search</span>
         <input type="search" id="q" placeholder="Filter by username" autocomplete="off" spellcheck="false">
       </label>
-      <label class="field">Sort
+      <label class="field"><span class="lbl">Sort</span>
         <select id="sort">
-          <option value="date-asc">Follow date, oldest first</option>
-          <option value="date-desc">Follow date, newest first</option>
+          <option value="date-asc">Oldest follow first</option>
+          <option value="date-desc">Newest follow first</option>
           <option value="name-asc">Username A–Z</option>
           <option value="name-desc">Username Z–A</option>
         </select>
       </label>
       <label class="check"><input type="checkbox" id="hide-dk"> Hide Done &amp; Keep</label>
-      <div class="actions-bar">
-        <button type="button" id="export">Export remaining as CSV</button>
-        <button type="button" id="reset" class="danger">Reset progress</button>
-      </div>
     </div>
 
     <div class="tabs" role="tablist" aria-label="Lists">
@@ -286,13 +335,17 @@ footer ol { padding-left: 20px; }
     <div class="panel" role="tabpanel" id="panel-mutual" aria-labelledby="tab-mutual" tabindex="0" hidden>
       <div class="card list" data-list="mutual"></div>
     </div>
+
+    <div class="actions-bar">
+      <button type="button" id="export">Export remaining as CSV</button>
+      <button type="button" id="reset" class="danger">Reset progress</button>
+    </div>
   </section>
 
   <div id="live" class="vh" aria-live="polite"></div>
 
   <footer>
-    <p><b>Getting your export:</b> Instagram app or web &rarr; Accounts Center &rarr; Your information and permissions &rarr; Export your information &rarr; Create export &rarr; choose your profile &rarr; Export to device &rarr; Customize information: select only <i>Followers and following</i> &rarr; Date range: All time &rarr; Format: <b>JSON</b> &rarr; Start export. Instagram emails you when it's ready to download.</p>
-    <p>This page makes no network requests. Done/Keep progress is saved in this browser only (localStorage). Nothing here unfollows anyone; you do that yourself on Instagram.</p>
+    <p>This page makes no network requests. So you can switch to Instagram and back without reloading your export, the loaded lists and your Done/Keep progress are saved in this browser only (localStorage); Clear removes the lists. Nothing here unfollows anyone; you do that yourself on Instagram.</p>
   </footer>
 </div>
 
@@ -300,10 +353,11 @@ footer ol { padding-left: 20px; }
 (() => {
 'use strict';
 
-const PAGE_SIZE = 100;
+const PAGE_SIZE = window.matchMedia('(max-width: 560px)').matches ? 50 : 100;
 const WARN_AT = 25;
 const LS_KEY = 'igFollowBack.progress.v1';
 const SS_KEY = 'igFollowBack.session.v1';
+const LISTS_KEY = 'igFollowBack.lists.v1';
 
 const $ = (s, r = document) => r.querySelector(s);
 const esc = (s) => String(s).replace(/[&<>"']/g, (c) => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[c]));
@@ -484,6 +538,37 @@ const state = {
   pages: { main: 0, done: 0, keep: 0, idfb: 0, mutual: 0 },
 };
 
+// Phones often discard a background tab while you're in the Instagram app, so keep the parsed
+// lists on this device and restore them on load. Nothing is sent anywhere.
+function saveLists() {
+  const s = localStore();
+  if (!s) return;
+  if (!state.sources.size) { try { s.removeItem(LISTS_KEY); } catch {} return; }
+  lsSet(LISTS_KEY, {
+    savedAt: Date.now(),
+    sources: [...state.sources.values()].map((x) => ({ key: x.key, kind: x.kind, label: x.label, entries: x.entries.map((e) => [e.u, e.ts]) })),
+  }, s);
+}
+function restoreLists() {
+  const s = localStore();
+  const v = s && lsGet(LISTS_KEY, s);
+  if (!v || !Array.isArray(v.sources)) return;
+  try {
+    for (const x of v.sources) {
+      if (x.kind !== 'followers' && x.kind !== 'following') continue;
+      state.sources.set(String(x.key), { key: String(x.key), kind: x.kind, label: String(x.label), entries: x.entries.map(([u, ts]) => ({ u: normalize(u), ts: Number(ts) || 0 })) });
+    }
+  } catch { state.sources.clear(); return; }
+  if (!state.sources.size) return;
+  renderLoaded();
+  const kinds = new Set([...state.sources.values()].map((x) => x.kind));
+  if (kinds.has('followers') && kinds.has('following')) {
+    compute();
+    showResults(true);
+    showStatus(`Restored the lists you loaded on ${df.format(new Date(v.savedAt || Date.now()))}. They're stored only in this browser. Choose a newer export to replace them, or Clear to remove them.`);
+  }
+}
+
 function showError(html) {
   const el = $('#error');
   el.innerHTML = html || '';
@@ -564,6 +649,7 @@ async function ingest(items) {
   const all = problems.concat(errors);
   showError(all.length ? (all.length === 1 ? all[0] : '<ul>' + all.map((x) => `<li>${x}</li>`).join('') + '</ul>') : '');
 
+  saveLists();
   renderLoaded();
   if (hasF && hasG) { compute(); showResults(true); } else showResults(false);
 }
@@ -596,6 +682,7 @@ function compute() {
 
 function showResults(on) {
   $('#results').hidden = !on;
+  $('#howto').hidden = on;
   $('#loader').classList.toggle('compact', on);
   if (on) render();
 }
@@ -631,7 +718,7 @@ function rowHtml(item, mode) {
     actions += `<button type="button" class="keep" data-act="keep" data-u="${esc(u)}" aria-pressed="${status === 'keep'}">Keep<span class="vh"> following @${esc(u)}</span></button>`;
   }
   actions += `<a class="btn primary" data-act="open" data-u="${esc(u)}" href="${esc(profileUrl(u))}" target="_blank" rel="noopener noreferrer">Open profile<span class="vh"> of @${esc(u)} (opens in a new tab)</span></a>`;
-  return `<li class="row"><div class="who"><span class="name">@${esc(u)}</span>${opened ? '<span class="tag">opened</span>' : ''}<span class="date">${dateLabel}${esc(fmtDate(item.ts))}</span></div><div class="row-actions">${actions}</div></li>`;
+  return `<li class="row${mode === 'dfb' ? ' marks' : ''}"><div class="who"><span class="name">@${esc(u)}</span>${opened ? '<span class="tag">opened</span>' : ''}<span class="date">${dateLabel}${esc(fmtDate(item.ts))}</span></div><div class="row-actions">${actions}</div></li>`;
 }
 
 function renderList(key, items, mode, emptyText) {
@@ -747,7 +834,7 @@ document.addEventListener('click', (e) => {
   if (!t) return;
   if (t.id === 'clear') {
     state.sources.clear(); state.data = null;
-    renderLoaded(); showError(''); showResults(false); fileInput.focus();
+    saveLists(); renderLoaded(); showError(''); showStatus(''); showResults(false); fileInput.focus();
     return;
   }
   if (t.dataset.pager) {
@@ -880,6 +967,8 @@ tabs.forEach((t, i) => {
     if (j !== null) { e.preventDefault(); selectTab(tabs[j], true); }
   });
 });
+
+restoreLists();
 
 // Expose pure helpers for testing from the console.
 window.__followBack = { extractEntries, normalize, usernameFromHref, classify, ingest, state };
