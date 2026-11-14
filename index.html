@@ -1,0 +1,889 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<!-- Hard guarantee that nothing leaves the page: no network connections, no external scripts/styles/images, no form posts. -->
+<meta http-equiv="Content-Security-Policy" content="default-src 'none'; script-src 'unsafe-inline'; style-src 'unsafe-inline'; img-src data:; connect-src 'none'; form-action 'none'; base-uri 'none'">
+<meta name="referrer" content="no-referrer">
+<meta name="color-scheme" content="light dark">
+<title>Follow-back Checker</title>
+<style>
+:root {
+  --bg: #f6f7f9;
+  --surface: #ffffff;
+  --surface-2: #f0f2f5;
+  --text: #15171c;
+  --muted: #5b616e;
+  --border: #dfe2e8;
+  --accent: #2b59c3;
+  --accent-hover: #2149a6;
+  --accent-text: #ffffff;
+  --accent-soft: #e8eefb;
+  --danger: #b3261e;
+  --danger-soft: #fdecea;
+  --warn-text: #6a4a00;
+  --warn-soft: #fff4d6;
+  --ok: #17794a;
+  --ok-soft: #e3f4ea;
+  --keep: #6d45c2;
+  --keep-soft: #efe9fb;
+  --focus: #2b59c3;
+  --radius: 10px;
+  --shadow: 0 1px 2px rgba(16, 24, 40, .06);
+}
+@media (prefers-color-scheme: dark) {
+  :root:not([data-theme="light"]) {
+    --bg: #101216;
+    --surface: #181b21;
+    --surface-2: #20242c;
+    --text: #e9ebf0;
+    --muted: #9aa1ae;
+    --border: #2c313b;
+    --accent: #7ea2ff;
+    --accent-hover: #9bb7ff;
+    --accent-text: #0d1117;
+    --accent-soft: #1d2740;
+    --danger: #ff8a80;
+    --danger-soft: #3a1c1a;
+    --warn-text: #ffd479;
+    --warn-soft: #34290f;
+    --ok: #6fd69d;
+    --ok-soft: #15301f;
+    --keep: #b9a0ff;
+    --keep-soft: #2a2140;
+    --focus: #9bb7ff;
+    --shadow: none;
+  }
+}
+:root[data-theme="dark"] {
+  --bg: #101216; --surface: #181b21; --surface-2: #20242c; --text: #e9ebf0; --muted: #9aa1ae;
+  --border: #2c313b; --accent: #7ea2ff; --accent-hover: #9bb7ff; --accent-text: #0d1117; --accent-soft: #1d2740;
+  --danger: #ff8a80; --danger-soft: #3a1c1a; --warn-text: #ffd479; --warn-soft: #34290f; --ok: #6fd69d;
+  --ok-soft: #15301f; --keep: #b9a0ff; --keep-soft: #2a2140; --focus: #9bb7ff; --shadow: none;
+}
+
+* { box-sizing: border-box; }
+html { -webkit-text-size-adjust: 100%; }
+body {
+  margin: 0;
+  background: var(--bg);
+  color: var(--text);
+  font: 15px/1.5 system-ui, -apple-system, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+}
+.wrap { max-width: 920px; margin: 0 auto; padding: 24px 16px 64px; }
+h1 { font-size: 1.5rem; line-height: 1.25; margin: 0 0 4px; letter-spacing: -.01em; }
+h2 { font-size: 1.05rem; margin: 0 0 12px; }
+p { margin: 0 0 12px; }
+.muted { color: var(--muted); }
+.small { font-size: .875rem; }
+.vh { position: absolute !important; width: 1px; height: 1px; padding: 0; margin: -1px; overflow: hidden; clip: rect(0 0 0 0); white-space: nowrap; border: 0; }
+[hidden] { display: none !important; }
+
+:focus-visible { outline: 3px solid var(--focus); outline-offset: 2px; border-radius: 6px; }
+
+.card {
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+  box-shadow: var(--shadow);
+}
+
+header.top { margin-bottom: 20px; }
+.privacy { display: inline-flex; gap: 6px; align-items: center; font-size: .85rem; color: var(--ok); background: var(--ok-soft); border-radius: 999px; padding: 3px 10px; margin-top: 8px; }
+
+/* Drop zone */
+.drop {
+  display: block;
+  border: 2px dashed var(--border);
+  border-radius: var(--radius);
+  background: var(--surface);
+  padding: 28px 16px;
+  text-align: center;
+  cursor: pointer;
+  transition: border-color .15s, background .15s;
+}
+.drop:hover, .drop.over { border-color: var(--accent); background: var(--accent-soft); }
+.drop:focus-within { outline: 3px solid var(--focus); outline-offset: 2px; }
+.drop strong { display: block; font-size: 1.05rem; margin-bottom: 4px; }
+.drop .pick { color: var(--accent); text-decoration: underline; }
+.drop .hint { display: block; margin-top: 6px; }
+.compact .drop { padding: 14px 16px; }
+.compact .drop .hint { display: none; }
+
+.msg { margin-top: 12px; padding: 12px 14px; border-radius: var(--radius); }
+.msg.error { background: var(--danger-soft); color: var(--danger); border: 1px solid color-mix(in srgb, var(--danger) 30%, transparent); }
+.msg.info { background: var(--surface-2); color: var(--text); }
+.msg ul { margin: 6px 0 0; padding-left: 20px; }
+.loaded { margin-top: 10px; display: flex; flex-wrap: wrap; gap: 8px; align-items: center; }
+.chip { font-size: .8rem; background: var(--surface-2); border: 1px solid var(--border); border-radius: 999px; padding: 2px 10px; }
+
+/* Buttons */
+.btn, button {
+  font: inherit;
+  font-size: .9rem;
+  display: inline-flex; align-items: center; justify-content: center; gap: 6px;
+  min-height: 36px;
+  padding: 6px 12px;
+  border-radius: 8px;
+  border: 1px solid var(--border);
+  background: var(--surface);
+  color: var(--text);
+  cursor: pointer;
+  text-decoration: none;
+  white-space: nowrap;
+}
+.btn:hover, button:hover { background: var(--surface-2); }
+.btn.primary { background: var(--accent); color: var(--accent-text); border-color: var(--accent); }
+.btn.primary:hover { background: var(--accent-hover); border-color: var(--accent-hover); }
+button.link { border: 0; background: none; color: var(--accent); padding: 0 2px; min-height: 0; text-decoration: underline; }
+button.danger { color: var(--danger); }
+button:disabled { opacity: .5; cursor: not-allowed; }
+
+/* Summary */
+.stats { display: grid; grid-template-columns: repeat(5, minmax(0, 1fr)); gap: 10px; margin: 20px 0 16px; padding: 0; }
+.stat { padding: 12px 14px; margin: 0; }
+.stat dt { font-size: .8rem; color: var(--muted); }
+.stat dd { margin: 2px 0 0; font-size: 1.5rem; font-weight: 650; font-variant-numeric: tabular-nums; }
+.stat dd .sub { display: block; font-size: .78rem; font-weight: 400; color: var(--muted); }
+.stat.hl { border-color: var(--accent); }
+@media (max-width: 720px) { .stats { grid-template-columns: repeat(2, minmax(0, 1fr)); } .stat.hl { grid-column: 1 / -1; order: -1; } }
+
+.session { display: flex; flex-wrap: wrap; align-items: center; gap: 8px 14px; padding: 10px 14px; margin-bottom: 12px; }
+.session .count { font-weight: 650; font-variant-numeric: tabular-nums; }
+.warn { background: var(--warn-soft); color: var(--warn-text); border-radius: var(--radius); padding: 10px 14px; margin-bottom: 12px; }
+
+/* Toolbar */
+.toolbar { display: flex; flex-wrap: wrap; gap: 10px; align-items: end; margin-bottom: 12px; }
+.field { display: flex; flex-direction: column; gap: 4px; font-size: .8rem; color: var(--muted); }
+.field.grow { flex: 1 1 200px; }
+input[type="search"], select {
+  font: inherit; font-size: .95rem;
+  min-height: 38px; padding: 6px 10px;
+  border: 1px solid var(--border); border-radius: 8px;
+  background: var(--surface); color: var(--text);
+  width: 100%;
+}
+.check { display: inline-flex; align-items: center; gap: 6px; font-size: .9rem; color: var(--text); min-height: 38px; cursor: pointer; }
+.check input { width: 18px; height: 18px; margin: 0; accent-color: var(--accent); }
+.actions-bar { display: flex; flex-wrap: wrap; gap: 8px; margin-left: auto; }
+
+/* Tabs */
+.tabs { display: flex; gap: 4px; border-bottom: 1px solid var(--border); overflow-x: auto; scrollbar-width: none; }
+.tab {
+  border: 0; border-bottom: 3px solid transparent; border-radius: 0;
+  background: none; color: var(--muted);
+  padding: 10px 12px; min-height: 44px; font-weight: 550;
+}
+.tab:hover { background: none; color: var(--text); }
+.tab[aria-selected="true"] { color: var(--text); border-bottom-color: var(--accent); }
+.tab .n { font-variant-numeric: tabular-nums; background: var(--surface-2); border-radius: 999px; padding: 0 7px; margin-left: 4px; font-size: .8rem; }
+.panel { padding-top: 12px; }
+.panel:focus-visible { outline-offset: -3px; }
+
+/* Rows */
+.list { overflow: hidden; }
+.rows { list-style: none; margin: 0; padding: 0; }
+.row { display: flex; align-items: center; gap: 12px; padding: 10px 14px; border-bottom: 1px solid var(--border); }
+.row:last-child { border-bottom: 0; }
+.who { flex: 1; min-width: 0; }
+.name { font-weight: 600; overflow-wrap: anywhere; }
+.date { display: block; font-size: .82rem; color: var(--muted); }
+.tag { font-size: .72rem; font-weight: 600; border-radius: 999px; padding: 1px 7px; margin-left: 6px; vertical-align: 1px; background: var(--accent-soft); color: var(--accent); }
+.row-actions { display: flex; gap: 8px; align-items: center; flex-wrap: wrap; justify-content: flex-end; }
+.done-chk { display: inline-flex; align-items: center; gap: 6px; min-height: 36px; padding: 0 10px; border: 1px solid var(--border); border-radius: 8px; cursor: pointer; font-size: .9rem; }
+.done-chk input { width: 18px; height: 18px; margin: 0; accent-color: var(--ok); }
+.done-chk:has(input:checked) { background: var(--ok-soft); border-color: var(--ok); color: var(--ok); }
+.keep[aria-pressed="true"] { background: var(--keep-soft); border-color: var(--keep); color: var(--keep); }
+.empty { padding: 24px 14px; text-align: center; color: var(--muted); }
+.pager { display: flex; align-items: center; justify-content: space-between; gap: 8px; padding: 10px 14px; border-top: 1px solid var(--border); background: var(--surface-2); font-size: .85rem; color: var(--muted); }
+@media (max-width: 560px) {
+  .row { flex-wrap: wrap; }
+  .row-actions { width: 100%; justify-content: flex-start; }
+  .actions-bar { margin-left: 0; }
+}
+
+details.sec { margin-top: 14px; }
+details.sec > summary { cursor: pointer; padding: 10px 14px; font-weight: 600; list-style-position: inside; border-radius: var(--radius); }
+details.sec[open] > summary { border-bottom: 1px solid var(--border); border-radius: var(--radius) var(--radius) 0 0; }
+details.sec .list { border: 0; border-radius: 0; box-shadow: none; }
+
+footer { margin-top: 32px; font-size: .85rem; color: var(--muted); }
+footer ol { padding-left: 20px; }
+</style>
+</head>
+<body>
+<div class="wrap">
+  <header class="top">
+    <h1>Who doesn't follow you back</h1>
+    <p class="muted">Load your Instagram data export to compare your followers and following lists.</p>
+    <span class="privacy">🔒 Runs entirely in this page. Your files are never uploaded.</span>
+  </header>
+
+  <section id="loader" aria-labelledby="loader-h">
+    <h2 id="loader-h" class="vh">Load your export</h2>
+    <label class="drop" id="drop">
+      <input type="file" id="file" class="vh" multiple accept=".zip,.json,.html,application/zip,application/json">
+      <strong>Drop your export here</strong>
+      <span>the .zip, the unzipped folder, or the JSON files &middot; <span class="pick">or choose files</span></span>
+      <span class="hint muted small">Needs <code>followers_1.json</code> (and any <code>followers_2.json</code>…) plus <code>following.json</code> from <code>connections/followers_and_following/</code>. Drop them all at once.</span>
+    </label>
+    <div id="error" class="msg error" role="alert" hidden></div>
+    <div id="status" class="msg info" role="status" hidden></div>
+    <div id="loaded" class="loaded small" hidden></div>
+  </section>
+
+  <section id="results" hidden aria-label="Results">
+    <dl class="stats" id="stats"></dl>
+
+    <div class="card session" id="session">
+      <span>Profiles opened this session: <span class="count" id="opened-count">0</span></span>
+      <button type="button" class="link" id="reset-session">Reset counter</button>
+    </div>
+    <div class="warn" id="warn" role="status" hidden></div>
+
+    <div class="toolbar">
+      <label class="field grow">Search
+        <input type="search" id="q" placeholder="Filter by username" autocomplete="off" spellcheck="false">
+      </label>
+      <label class="field">Sort
+        <select id="sort">
+          <option value="date-asc">Follow date, oldest first</option>
+          <option value="date-desc">Follow date, newest first</option>
+          <option value="name-asc">Username A–Z</option>
+          <option value="name-desc">Username Z–A</option>
+        </select>
+      </label>
+      <label class="check"><input type="checkbox" id="hide-dk"> Hide Done &amp; Keep</label>
+      <div class="actions-bar">
+        <button type="button" id="export">Export remaining as CSV</button>
+        <button type="button" id="reset" class="danger">Reset progress</button>
+      </div>
+    </div>
+
+    <div class="tabs" role="tablist" aria-label="Lists">
+      <button type="button" class="tab" role="tab" id="tab-dfb" aria-controls="panel-dfb" aria-selected="true">Don't follow me back<span class="n" id="n-dfb">0</span></button>
+      <button type="button" class="tab" role="tab" id="tab-idfb" aria-controls="panel-idfb" aria-selected="false" tabindex="-1">I don't follow back<span class="n" id="n-idfb">0</span></button>
+      <button type="button" class="tab" role="tab" id="tab-mutual" aria-controls="panel-mutual" aria-selected="false" tabindex="-1">Mutuals<span class="n" id="n-mutual">0</span></button>
+    </div>
+
+    <div class="panel" role="tabpanel" id="panel-dfb" aria-labelledby="tab-dfb" tabindex="0">
+      <p class="muted small">Open each profile, unfollow on Instagram if you want to, then tick <b>Done</b>. Use <b>Keep</b> for accounts you'll keep following (brands, celebrities…).</p>
+      <div class="card list" data-list="main"></div>
+      <details class="card sec" id="sec-done">
+        <summary>Done, unfollowed (<span id="n-done">0</span>)</summary>
+        <div class="card list" data-list="done"></div>
+      </details>
+      <details class="card sec" id="sec-keep">
+        <summary>Keep following (<span id="n-keep">0</span>)</summary>
+        <div class="card list" data-list="keep"></div>
+      </details>
+    </div>
+    <div class="panel" role="tabpanel" id="panel-idfb" aria-labelledby="tab-idfb" tabindex="0" hidden>
+      <p class="muted small">People who follow you but you don't follow. The date is when they followed you.</p>
+      <div class="card list" data-list="idfb"></div>
+    </div>
+    <div class="panel" role="tabpanel" id="panel-mutual" aria-labelledby="tab-mutual" tabindex="0" hidden>
+      <div class="card list" data-list="mutual"></div>
+    </div>
+  </section>
+
+  <div id="live" class="vh" aria-live="polite"></div>
+
+  <footer>
+    <p><b>Getting your export:</b> Instagram app or web &rarr; Accounts Center &rarr; Your information and permissions &rarr; Export your information &rarr; Create export &rarr; choose your profile &rarr; Export to device &rarr; Customize information: select only <i>Followers and following</i> &rarr; Date range: All time &rarr; Format: <b>JSON</b> &rarr; Start export. Instagram emails you when it's ready to download.</p>
+    <p>This page makes no network requests. Done/Keep progress is saved in this browser only (localStorage). Nothing here unfollows anyone; you do that yourself on Instagram.</p>
+  </footer>
+</div>
+
+<script>
+(() => {
+'use strict';
+
+const PAGE_SIZE = 100;
+const WARN_AT = 25;
+const LS_KEY = 'igFollowBack.progress.v1';
+const SS_KEY = 'igFollowBack.session.v1';
+
+const $ = (s, r = document) => r.querySelector(s);
+const esc = (s) => String(s).replace(/[&<>"']/g, (c) => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[c]));
+const nf = new Intl.NumberFormat();
+const df = new Intl.DateTimeFormat(undefined, { year: 'numeric', month: 'short', day: 'numeric' });
+
+/* ---------------- storage (all wrapped: storage may be blocked) ---------------- */
+function lsGet(key, store) {
+  try { const v = store.getItem(key); return v ? JSON.parse(v) : null; } catch { return null; }
+}
+function lsSet(key, val, store) {
+  try { store.setItem(key, JSON.stringify(val)); return true; } catch { return false; }
+}
+function localStore() { try { return window.localStorage; } catch { return null; } }
+function sessionStore() { try { return window.sessionStorage; } catch { return null; } }
+
+let progress = {}; // username -> 'done' | 'keep'
+{
+  const s = localStore();
+  const v = s && lsGet(LS_KEY, s);
+  if (v && typeof v === 'object' && !Array.isArray(v)) progress = v;
+}
+function saveProgress() { const s = localStore(); if (s) lsSet(LS_KEY, progress, s); }
+
+let session = { count: 0, opened: [] };
+{
+  const s = sessionStore();
+  const v = s && lsGet(SS_KEY, s);
+  if (v && typeof v.count === 'number') session = { count: v.count, opened: Array.isArray(v.opened) ? v.opened : [] };
+}
+const openedSet = new Set(session.opened);
+function saveSession() {
+  session.opened = [...openedSet];
+  const s = sessionStore(); if (s) lsSet(SS_KEY, session, s);
+}
+
+/* ---------------- parsing ---------------- */
+function normalize(u) {
+  return String(u == null ? '' : u).trim().replace(/^@+/, '').toLowerCase();
+}
+function usernameFromHref(href) {
+  if (typeof href !== 'string' || !href.trim()) return '';
+  let path;
+  try { path = new URL(href.trim(), 'https://www.instagram.com/').pathname; }
+  catch { path = href; }
+  const segs = path.split('/').filter(Boolean);
+  if (segs[0] === '_u') segs.shift();
+  try { return decodeURIComponent(segs[0] || ''); } catch { return segs[0] || ''; }
+}
+function nonEmpty(v) { return typeof v === 'string' && v.trim() !== ''; }
+
+function extractEntries(json, kind) {
+  let arr = null;
+  if (Array.isArray(json)) arr = json;
+  else if (json && typeof json === 'object') {
+    const pref = kind === 'following' ? 'relationships_following' : 'relationships_followers';
+    if (Array.isArray(json[pref])) arr = json[pref];
+    else {
+      const k = Object.keys(json).find((key) => Array.isArray(json[key]));
+      if (k) arr = json[k];
+    }
+  }
+  if (!arr) throw new Error('has an unexpected structure (no list of accounts found).');
+  const out = [];
+  let skipped = 0;
+  for (const e of arr) {
+    const sld = e && Array.isArray(e.string_list_data) ? (e.string_list_data[0] || {}) : {};
+    const raw = nonEmpty(sld.value) ? sld.value : nonEmpty(e && e.title) ? e.title : usernameFromHref(sld.href);
+    const u = normalize(raw);
+    if (!u) { skipped++; continue; }
+    out.push({ u, ts: Number(sld.timestamp) || 0 });
+  }
+  return { entries: out, skipped };
+}
+
+// Returns 'followers' | 'following' | 'html' | null based on file name.
+function classify(path) {
+  const base = path.split('/').pop().toLowerCase();
+  if (/^followers(_\d+)?\.json$/.test(base)) return 'followers';
+  if (base === 'following.json') return 'following';
+  if (/^followers(_\d+)?\.html$/.test(base) || base === 'following.html') return 'html';
+  return null;
+}
+
+/* ---------------- minimal zip reader (central directory + DecompressionStream) ---------------- */
+async function readZipEntries(file) {
+  const size = file.size;
+  const tailLen = Math.min(size, 65535 + 22 + 20);
+  const tail = new DataView(await file.slice(size - tailLen).arrayBuffer());
+  let eocd = -1;
+  for (let i = tail.byteLength - 22; i >= 0; i--) {
+    if (tail.getUint32(i, true) === 0x06054b50) { eocd = i; break; }
+  }
+  if (eocd < 0) throw new Error("isn't a valid zip file.");
+  let count = tail.getUint16(eocd + 10, true);
+  let cdSize = tail.getUint32(eocd + 12, true);
+  let cdOff = tail.getUint32(eocd + 16, true);
+  if (count === 0xffff || cdSize === 0xffffffff || cdOff === 0xffffffff) {
+    const loc = eocd - 20;
+    if (loc >= 0 && tail.getUint32(loc, true) === 0x07064b50) {
+      const z64 = Number(tail.getBigUint64(loc + 8, true));
+      const z = new DataView(await file.slice(z64, z64 + 56).arrayBuffer());
+      if (z.getUint32(0, true) !== 0x06064b50) throw new Error('has a damaged ZIP64 header.');
+      count = Number(z.getBigUint64(32, true));
+      cdSize = Number(z.getBigUint64(40, true));
+      cdOff = Number(z.getBigUint64(48, true));
+    }
+  }
+  const cd = new DataView(await file.slice(cdOff, cdOff + cdSize).arrayBuffer());
+  const td = new TextDecoder();
+  const entries = [];
+  let p = 0;
+  while (p + 46 <= cd.byteLength && cd.getUint32(p, true) === 0x02014b50) {
+    const flags = cd.getUint16(p + 8, true);
+    const method = cd.getUint16(p + 10, true);
+    let comp = cd.getUint32(p + 20, true);
+    let uncomp = cd.getUint32(p + 24, true);
+    const nl = cd.getUint16(p + 28, true), xl = cd.getUint16(p + 30, true), cl = cd.getUint16(p + 32, true);
+    let off = cd.getUint32(p + 42, true);
+    const name = td.decode(new Uint8Array(cd.buffer, cd.byteOffset + p + 46, nl)).replace(/\\/g, '/');
+    let x = p + 46 + nl;
+    const xend = x + xl;
+    while (x + 4 <= xend) {
+      const id = cd.getUint16(x, true), sz = cd.getUint16(x + 2, true);
+      if (id === 0x0001) {
+        let q = x + 4;
+        if (uncomp === 0xffffffff) { uncomp = Number(cd.getBigUint64(q, true)); q += 8; }
+        if (comp === 0xffffffff) { comp = Number(cd.getBigUint64(q, true)); q += 8; }
+        if (off === 0xffffffff) { off = Number(cd.getBigUint64(q, true)); q += 8; }
+      }
+      x += 4 + sz;
+    }
+    entries.push({ name, flags, method, comp, uncomp, off });
+    p = xend + cl;
+  }
+  return entries;
+}
+
+async function readZipEntryText(file, e) {
+  if (e.flags & 1) throw new Error('is encrypted.');
+  const h = new DataView(await file.slice(e.off, e.off + 30).arrayBuffer());
+  if (h.getUint32(0, true) !== 0x04034b50) throw new Error('is damaged inside the zip.');
+  const start = e.off + 30 + h.getUint16(26, true) + h.getUint16(28, true);
+  const blob = file.slice(start, start + e.comp);
+  if (e.method === 0) return blob.text();
+  if (e.method === 8) {
+    if (typeof DecompressionStream === 'undefined') {
+      throw new Error("can't be unzipped in this browser. Unzip the export yourself and drop the JSON files instead.");
+    }
+    return new Response(blob.stream().pipeThrough(new DecompressionStream('deflate-raw'))).text();
+  }
+  throw new Error(`uses an unsupported compression method (${e.method}). Unzip it yourself and drop the JSON files.`);
+}
+
+/* ---------------- folder drop support ---------------- */
+async function walkEntry(entry, prefix, out) {
+  if (entry.isFile) {
+    const file = await new Promise((res, rej) => entry.file(res, rej));
+    out.push({ file, path: prefix + entry.name });
+  } else if (entry.isDirectory) {
+    const reader = entry.createReader();
+    for (;;) {
+      const batch = await new Promise((res, rej) => reader.readEntries(res, rej));
+      if (!batch.length) break;
+      for (const child of batch) await walkEntry(child, prefix + entry.name + '/', out);
+    }
+  }
+}
+
+/* ---------------- app state ---------------- */
+const state = {
+  sources: new Map(), // key -> { kind, label, entries }
+  data: null,         // { followers: Map, following: Map, dfb: [], idfb: [], mutual: [] }
+  tab: 'dfb',
+  query: '',
+  sort: 'date-asc',
+  hideDK: false,
+  pages: { main: 0, done: 0, keep: 0, idfb: 0, mutual: 0 },
+};
+
+function showError(html) {
+  const el = $('#error');
+  el.innerHTML = html || '';
+  el.hidden = !html;
+}
+function showStatus(text) {
+  const el = $('#status');
+  el.textContent = text || '';
+  el.hidden = !text;
+}
+
+const HTML_ERR = '<b>These files are HTML, not JSON.</b> Your export was created in HTML format. Request a new export from Instagram and choose <b>Format: JSON</b> (Accounts Center &rarr; Your information and permissions &rarr; Export your information).';
+
+async function ingest(items) {
+  showError('');
+  showStatus('Reading files…');
+  const found = [];
+  const errors = [];
+  let sawHtml = false, zips = 0;
+
+  for (const { file, path } of items) {
+    try {
+      if (/\.zip$/i.test(path)) {
+        zips++;
+        const entries = await readZipEntries(file);
+        const rel = entries.map((e) => ({ e, kind: classify(e.name) })).filter((x) => x.kind);
+        const inFolder = rel.filter((x) => /(^|\/)followers_and_following\//i.test(x.e.name));
+        for (const x of (inFolder.length ? inFolder : rel)) {
+          if (x.kind === 'html') { sawHtml = true; continue; }
+          found.push({ kind: x.kind, key: file.name + '/' + x.e.name, label: x.e.name.split('/').pop(), read: () => readZipEntryText(file, x.e) });
+        }
+      } else {
+        const kind = classify(path);
+        if (kind === 'html') sawHtml = true;
+        else if (kind) found.push({ kind, key: path, label: file.name, read: () => file.text() });
+      }
+    } catch (err) {
+      errors.push(`${esc(file.name)} ${esc(err.message)}`);
+    }
+  }
+
+  const fresh = [];
+  for (const f of found) {
+    try {
+      const text = String(await f.read()).replace(/^﻿/, '').trimStart();
+      if (text.startsWith('<')) { sawHtml = true; continue; }
+      let json;
+      try { json = JSON.parse(text); } catch { errors.push(`${esc(f.label)} isn't valid JSON.`); continue; }
+      const { entries, skipped } = extractEntries(json, f.kind);
+      if (skipped) errors.push(`${esc(f.label)}: skipped ${skipped} entr${skipped === 1 ? 'y' : 'ies'} with no username.`);
+      fresh.push({ key: f.key, kind: f.kind, label: f.label, entries });
+    } catch (err) {
+      errors.push(`${esc(f.label)} ${esc(err.message)}`);
+    }
+  }
+
+  // A new batch replaces previously loaded files of the same kind (so a new export doesn't mix with an old one).
+  const kindsInBatch = new Set(fresh.map((f) => f.kind));
+  for (const [k, v] of state.sources) if (kindsInBatch.has(v.kind)) state.sources.delete(k);
+  for (const f of fresh) state.sources.set(f.key, f);
+
+  showStatus('');
+  const problems = [];
+  if (!fresh.length) {
+    if (sawHtml) problems.push(HTML_ERR);
+    else if (zips) problems.push("<b>Couldn't find your followers and following lists in that zip.</b> Look for <code>connections/followers_and_following/</code>. If Instagram split your export into several zip files, drop all of them together, and make sure the export included <i>Followers and following</i>.");
+    else if (!errors.length) problems.push('<b>None of those files are followers or following lists.</b> Expected <code>followers_1.json</code> and <code>following.json</code>.');
+  } else if (sawHtml) {
+    problems.push('Some files were HTML and were ignored. ' + HTML_ERR);
+  }
+
+  const hasF = [...state.sources.values()].some((s) => s.kind === 'followers');
+  const hasG = [...state.sources.values()].some((s) => s.kind === 'following');
+  if (fresh.length || state.sources.size) {
+    if (!hasF) problems.push('<b>Missing your followers list</b> (<code>followers_1.json</code>). Add it to see results.');
+    if (!hasG) problems.push('<b>Missing your following list</b> (<code>following.json</code>). Add it to see results.');
+  }
+  const all = problems.concat(errors);
+  showError(all.length ? (all.length === 1 ? all[0] : '<ul>' + all.map((x) => `<li>${x}</li>`).join('') + '</ul>') : '');
+
+  renderLoaded();
+  if (hasF && hasG) { compute(); showResults(true); } else showResults(false);
+}
+
+function renderLoaded() {
+  const el = $('#loaded');
+  if (!state.sources.size) { el.hidden = true; el.innerHTML = ''; return; }
+  const chips = [...state.sources.values()]
+    .sort((a, b) => a.kind.localeCompare(b.kind) || a.label.localeCompare(b.label, undefined, { numeric: true }))
+    .map((s) => `<span class="chip">${esc(s.label)} &middot; ${nf.format(s.entries.length)}</span>`).join('');
+  el.innerHTML = `<span class="muted">Loaded:</span>${chips}<button type="button" class="link" id="clear">Clear</button>`;
+  el.hidden = false;
+}
+
+function compute() {
+  const followers = new Map(), following = new Map();
+  for (const s of state.sources.values()) {
+    const m = s.kind === 'followers' ? followers : following;
+    for (const { u, ts } of s.entries) {
+      const prev = m.get(u);
+      if (prev === undefined || (ts && (!prev || ts < prev))) m.set(u, ts);
+    }
+  }
+  const dfb = [], idfb = [], mutual = [];
+  for (const [u, ts] of following) (followers.has(u) ? mutual : dfb).push({ u, ts });
+  for (const [u, ts] of followers) if (!following.has(u)) idfb.push({ u, ts });
+  state.data = { followers, following, dfb, idfb, mutual };
+  for (const k in state.pages) state.pages[k] = 0;
+}
+
+function showResults(on) {
+  $('#results').hidden = !on;
+  $('#loader').classList.toggle('compact', on);
+  if (on) render();
+}
+
+/* ---------------- rendering ---------------- */
+function fmtDate(ts) {
+  if (!ts) return 'date unknown';
+  return df.format(new Date(ts > 1e12 ? ts : ts * 1000));
+}
+function profileUrl(u) { return `https://www.instagram.com/${encodeURIComponent(u)}/`; }
+
+function sorted(items) {
+  const q = state.query;
+  const arr = q ? items.filter((x) => x.u.includes(q)) : items.slice();
+  const byName = (a, b) => (a.u < b.u ? -1 : a.u > b.u ? 1 : 0);
+  switch (state.sort) {
+    case 'name-asc': arr.sort(byName); break;
+    case 'name-desc': arr.sort((a, b) => byName(b, a)); break;
+    case 'date-desc': arr.sort((a, b) => (!a.ts - !b.ts) || (b.ts - a.ts) || byName(a, b)); break;
+    default: arr.sort((a, b) => (!a.ts - !b.ts) || (a.ts - b.ts) || byName(a, b));
+  }
+  return arr;
+}
+
+function rowHtml(item, mode) {
+  const u = item.u;
+  const status = progress[u];
+  const opened = openedSet.has(u);
+  const dateLabel = mode === 'idfb' ? 'Followed you ' : 'You followed ';
+  let actions = '';
+  if (mode === 'dfb') {
+    actions += `<label class="done-chk"><input type="checkbox" data-act="done" data-u="${esc(u)}"${status === 'done' ? ' checked' : ''}> Done<span class="vh"> (unfollowed @${esc(u)})</span></label>`;
+    actions += `<button type="button" class="keep" data-act="keep" data-u="${esc(u)}" aria-pressed="${status === 'keep'}">Keep<span class="vh"> following @${esc(u)}</span></button>`;
+  }
+  actions += `<a class="btn primary" data-act="open" data-u="${esc(u)}" href="${esc(profileUrl(u))}" target="_blank" rel="noopener noreferrer">Open profile<span class="vh"> of @${esc(u)} (opens in a new tab)</span></a>`;
+  return `<li class="row"><div class="who"><span class="name">@${esc(u)}</span>${opened ? '<span class="tag">opened</span>' : ''}<span class="date">${dateLabel}${esc(fmtDate(item.ts))}</span></div><div class="row-actions">${actions}</div></li>`;
+}
+
+function renderList(key, items, mode, emptyText) {
+  const el = $(`[data-list="${key}"]`);
+  const total = items.length;
+  const pages = Math.max(1, Math.ceil(total / PAGE_SIZE));
+  const page = state.pages[key] = Math.min(state.pages[key], pages - 1);
+  if (!total) { el.innerHTML = `<p class="empty">${esc(state.query ? 'No usernames match your search.' : emptyText)}</p>`; return; }
+  const start = page * PAGE_SIZE;
+  const slice = items.slice(start, start + PAGE_SIZE);
+  let html = `<ul class="rows" aria-label="${esc(listLabel(key))}">${slice.map((it) => rowHtml(it, mode)).join('')}</ul>`;
+  if (pages > 1) {
+    html += `<nav class="pager" aria-label="${esc(listLabel(key))} pages">
+      <button type="button" data-pager="${key}" data-dir="-1"${page === 0 ? ' disabled' : ''}>&larr; Prev</button>
+      <span>${nf.format(start + 1)}–${nf.format(start + slice.length)} of ${nf.format(total)}</span>
+      <button type="button" data-pager="${key}" data-dir="1"${page >= pages - 1 ? ' disabled' : ''}>Next &rarr;</button>
+    </nav>`;
+  }
+  el.innerHTML = html;
+}
+function listLabel(key) {
+  return { main: "Don't follow you back", done: 'Done', keep: 'Keep', idfb: "You don't follow back", mutual: 'Mutuals' }[key];
+}
+
+function render() {
+  const d = state.data;
+  if (!d) return;
+  const main = [], done = [], keep = [];
+  for (const it of d.dfb) {
+    const s = progress[it.u];
+    (s === 'done' ? done : s === 'keep' ? keep : main).push(it);
+  }
+  $('#stats').innerHTML = [
+    ['Followers', d.followers.size],
+    ['Following', d.following.size],
+    ['Mutuals', d.mutual.length],
+    ["Don't follow me back", d.dfb.length, `${nf.format(main.length)} left to review`, true],
+    ["I don't follow back", d.idfb.length],
+  ].map(([label, n, sub, hl]) => `<div class="card stat${hl ? ' hl' : ''}"><dt>${label}</dt><dd>${nf.format(n)}${sub ? `<span class="sub">${sub}</span>` : ''}</dd></div>`).join('');
+
+  $('#n-dfb').textContent = nf.format(main.length);
+  $('#n-idfb').textContent = nf.format(d.idfb.length);
+  $('#n-mutual').textContent = nf.format(d.mutual.length);
+  $('#n-done').textContent = nf.format(done.length);
+  $('#n-keep').textContent = nf.format(keep.length);
+  $('#sec-done').hidden = state.hideDK;
+  $('#sec-keep').hidden = state.hideDK;
+
+  if (state.tab === 'dfb') {
+    renderList('main', sorted(main), 'dfb', d.dfb.length ? 'All reviewed. Nice work!' : 'Everyone you follow follows you back.');
+    renderList('done', sorted(done), 'dfb', 'Nothing marked Done yet.');
+    renderList('keep', sorted(keep), 'dfb', 'Nothing marked Keep yet.');
+  } else if (state.tab === 'idfb') {
+    renderList('idfb', sorted(d.idfb), 'idfb', 'You follow back everyone who follows you.');
+  } else {
+    renderList('mutual', sorted(d.mutual), 'mutual', 'No mutual follows.');
+  }
+  renderSession();
+}
+
+function renderSession() {
+  $('#opened-count').textContent = nf.format(session.count);
+  const w = $('#warn');
+  if (session.count >= WARN_AT) {
+    w.textContent = `You've opened ${session.count} profiles this session. Consider taking a break for a while: Instagram can temporarily limit accounts that unfollow lots of people quickly. Your progress is saved, so you can pick up later.`;
+    w.hidden = false;
+  } else w.hidden = true;
+}
+
+function announce(text) {
+  const el = $('#live');
+  el.textContent = '';
+  setTimeout(() => { el.textContent = text; }, 30);
+}
+
+/* ---------------- events ---------------- */
+const fileInput = $('#file');
+fileInput.addEventListener('change', () => {
+  const items = [...fileInput.files].map((file) => ({ file, path: file.webkitRelativePath || file.name }));
+  fileInput.value = '';
+  if (items.length) ingest(items);
+});
+
+const drop = $('#drop');
+['dragenter', 'dragover'].forEach((t) => window.addEventListener(t, (e) => {
+  e.preventDefault();
+  if (e.dataTransfer) e.dataTransfer.dropEffect = 'copy';
+  drop.classList.add('over');
+}));
+['dragleave', 'dragend'].forEach((t) => window.addEventListener(t, (e) => {
+  if (!e.relatedTarget) drop.classList.remove('over');
+}));
+window.addEventListener('drop', async (e) => {
+  e.preventDefault();
+  drop.classList.remove('over');
+  const dt = e.dataTransfer;
+  if (!dt) return;
+  const entries = dt.items ? [...dt.items].map((it) => (it.kind === 'file' && it.webkitGetAsEntry ? it.webkitGetAsEntry() : null)) : [];
+  const files = [...dt.files];
+  let items = [];
+  if (entries.length && entries.every(Boolean)) {
+    showStatus('Reading folder…');
+    try { for (const en of entries) await walkEntry(en, '', items); }
+    catch { items = files.map((file) => ({ file, path: file.name })); }
+  } else {
+    items = files.map((file) => ({ file, path: file.name }));
+  }
+  if (items.length) ingest(items); else showStatus('');
+});
+
+document.addEventListener('click', (e) => {
+  const t = e.target.closest('[data-act], [data-pager], #clear');
+  if (!t) return;
+  if (t.id === 'clear') {
+    state.sources.clear(); state.data = null;
+    renderLoaded(); showError(''); showResults(false); fileInput.focus();
+    return;
+  }
+  if (t.dataset.pager) {
+    const key = t.dataset.pager;
+    state.pages[key] += Number(t.dataset.dir);
+    render();
+    const list = $(`[data-list="${key}"]`);
+    const first = list.querySelector('.row a, .row input');
+    if (first) first.focus({ preventScroll: true });
+    list.scrollIntoView({ block: 'start', behavior: 'smooth' });
+    return;
+  }
+  if (t.dataset.act === 'open') { countOpen(t.dataset.u, t); return; }
+  if (t.dataset.act === 'keep') {
+    const u = t.dataset.u;
+    setStatusFor(u, progress[u] === 'keep' ? null : 'keep', t);
+  }
+});
+// Middle-click opens count too.
+document.addEventListener('auxclick', (e) => {
+  const t = e.target.closest('[data-act="open"]');
+  if (t && e.button === 1) countOpen(t.dataset.u, t);
+});
+document.addEventListener('change', (e) => {
+  const t = e.target;
+  if (t.dataset && t.dataset.act === 'done') setStatusFor(t.dataset.u, t.checked ? 'done' : null, t);
+});
+
+function countOpen(u, el) {
+  session.count++;
+  openedSet.add(u);
+  saveSession();
+  renderSession();
+  const who = el.closest('.who') || el.closest('.row').querySelector('.who');
+  if (who && !who.querySelector('.tag')) who.querySelector('.name').insertAdjacentHTML('afterend', '<span class="tag">opened</span>');
+}
+
+function setStatusFor(u, status, control) {
+  const li = control.closest('li.row');
+  const listEl = control.closest('[data-list]');
+  const key = listEl.dataset.list;
+  const idx = [...li.parentNode.children].indexOf(li);
+  const act = control.dataset.act;
+  if (status) progress[u] = status; else delete progress[u];
+  saveProgress();
+  render();
+  // Keep keyboard focus in the same place in the list the row left.
+  const rows = $(`[data-list="${key}"]`).querySelectorAll('li.row');
+  if (rows.length) {
+    const r = rows[Math.min(idx, rows.length - 1)];
+    (r.querySelector(`[data-act="${act}"]`) || r.querySelector('a')).focus();
+  } else {
+    const sec = listEl.closest('details');
+    (sec ? sec.querySelector('summary') : $('#panel-dfb')).focus();
+  }
+  const left = state.data.dfb.filter((x) => !progress[x.u]).length;
+  announce(status === 'done' ? `@${u} marked Done. ${left} left.` : status === 'keep' ? `@${u} marked Keep. ${left} left.` : `@${u} moved back to the list. ${left} left.`);
+}
+
+let qTimer;
+$('#q').addEventListener('input', (e) => {
+  clearTimeout(qTimer);
+  qTimer = setTimeout(() => {
+    state.query = normalize(e.target.value);
+    for (const k in state.pages) state.pages[k] = 0;
+    render();
+  }, 120);
+});
+$('#sort').addEventListener('change', (e) => { state.sort = e.target.value; for (const k in state.pages) state.pages[k] = 0; render(); });
+$('#hide-dk').addEventListener('change', (e) => { state.hideDK = e.target.checked; render(); });
+
+$('#reset').addEventListener('click', () => {
+  const n = Object.keys(progress).length;
+  if (!n) { announce('No progress to reset.'); return; }
+  if (!confirm(`Clear Done/Keep marks for ${n} account${n === 1 ? '' : 's'}? This can't be undone.`)) return;
+  progress = {};
+  saveProgress();
+  render();
+  announce('Progress reset.');
+});
+$('#reset-session').addEventListener('click', () => {
+  session.count = 0; openedSet.clear(); saveSession(); render(); announce('Counter reset.');
+});
+
+$('#export').addEventListener('click', () => {
+  if (!state.data) return;
+  const remaining = sorted(state.data.dfb.filter((x) => !progress[x.u]));
+  const cell = (v) => {
+    let s = String(v);
+    if (/^[=+\-@\t\r]/.test(s)) s = "'" + s; // guard against spreadsheet formula injection
+    return /[",\n\r]/.test(s) ? `"${s.replace(/"/g, '""')}"` : s;
+  };
+  const iso = (ts) => (ts ? new Date(ts > 1e12 ? ts : ts * 1000).toISOString().slice(0, 10) : '');
+  const lines = [['username', 'profile_url', 'you_followed_on'].join(',')]
+    .concat(remaining.map((x) => [x.u, profileUrl(x.u), iso(x.ts)].map(cell).join(',')));
+  const blob = new Blob(['﻿' + lines.join('\r\n') + '\r\n'], { type: 'text/csv;charset=utf-8' });
+  const a = document.createElement('a');
+  a.href = URL.createObjectURL(blob);
+  a.download = `dont-follow-back-remaining-${new Date().toISOString().slice(0, 10)}.csv`;
+  document.body.appendChild(a);
+  a.click();
+  a.remove();
+  setTimeout(() => URL.revokeObjectURL(a.href), 5000);
+  announce(`Exported ${remaining.length} accounts.`);
+});
+
+/* Tabs: click + arrow keys (roving tabindex) */
+const tabs = [...document.querySelectorAll('[role="tab"]')];
+function selectTab(tab, focus) {
+  for (const t of tabs) {
+    const on = t === tab;
+    t.setAttribute('aria-selected', on);
+    t.tabIndex = on ? 0 : -1;
+    $('#' + t.getAttribute('aria-controls')).hidden = !on;
+  }
+  state.tab = tab.id.slice(4);
+  $('#hide-dk').disabled = state.tab !== 'dfb';
+  $('#hide-dk').parentElement.style.opacity = state.tab === 'dfb' ? '' : '.5';
+  if (focus) tab.focus();
+  render();
+}
+tabs.forEach((t, i) => {
+  t.addEventListener('click', () => selectTab(t));
+  t.addEventListener('keydown', (e) => {
+    let j = null;
+    if (e.key === 'ArrowRight') j = (i + 1) % tabs.length;
+    else if (e.key === 'ArrowLeft') j = (i - 1 + tabs.length) % tabs.length;
+    else if (e.key === 'Home') j = 0;
+    else if (e.key === 'End') j = tabs.length - 1;
+    if (j !== null) { e.preventDefault(); selectTab(tabs[j], true); }
+  });
+});
+
+// Expose pure helpers for testing from the console.
+window.__followBack = { extractEntries, normalize, usernameFromHref, classify, ingest, state };
+})();
+</script>
+</body>
+</html>

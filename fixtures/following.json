@@ -1,0 +1,11 @@
+{
+  "relationships_following": [
+    { "title": "", "media_list_data": [], "string_list_data": [ { "href": "https://www.instagram.com/alice", "value": "alice", "timestamp": 1577836800 } ] },
+    { "title": "BOB", "string_list_data": [ { "href": "https://www.instagram.com/_u/BOB", "timestamp": 1580515200 } ] },
+    { "title": "erin", "string_list_data": [ { "href": "https://www.instagram.com/_u/erin", "timestamp": 1583020800 } ] },
+    { "title": "zara_brand", "string_list_data": [ { "href": "https://www.instagram.com/_u/zara_brand", "timestamp": 1585699200 } ] },
+    { "string_list_data": [ { "href": "https://www.instagram.com/_u/Yuki.Travel", "timestamp": 1546300800 } ] },
+    { "title": "", "string_list_data": [ { "href": "https://www.instagram.com/xavier/", "timestamp": 1672531200 } ] },
+    { "title": "", "media_list_data": [], "string_list_data": [ { "href": "https://www.instagram.com/wendy", "value": " Wendy ", "timestamp": 1640995200 } ] }
+  ]
+}
