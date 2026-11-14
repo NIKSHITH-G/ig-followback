@@ -12,57 +12,33 @@
 <title>Follow-back Checker</title>
 <style>
 :root {
-  --bg: #f6f7f9;
-  --surface: #ffffff;
-  --surface-2: #f0f2f5;
-  --text: #15171c;
-  --muted: #5b616e;
-  --border: #dfe2e8;
-  --accent: #2b59c3;
-  --accent-hover: #2149a6;
-  --accent-text: #ffffff;
-  --accent-soft: #e8eefb;
-  --danger: #b3261e;
-  --danger-soft: #fdecea;
-  --warn-text: #6a4a00;
-  --warn-soft: #fff4d6;
-  --ok: #17794a;
-  --ok-soft: #e3f4ea;
-  --keep: #6d45c2;
-  --keep-soft: #efe9fb;
-  --focus: #2b59c3;
-  --radius: 10px;
-  --shadow: 0 1px 2px rgba(16, 24, 40, .06);
+  --bg: #f5f4fa; --surface: #ffffff; --surface-2: #efedf7; --text: #17151f; --muted: #625e73;
+  --border: #e4e1ef; --accent: #6d3df5; --accent-hover: #5a2ee0; --accent-text: #ffffff; --accent-soft: #eee8ff;
+  --danger: #b3261e; --danger-soft: #fdecea; --warn-text: #6a4a00; --warn-soft: #fff4d6; --ok: #17794a; --ok-soft: #e3f4ea;
+  --keep: #0b6e80; --keep-soft: #e0f3f6; --focus: #6d3df5;
+  --grad: linear-gradient(135deg, #5b34e6 0%, #b5379e 62%, #e0564a 100%);
+  --radius: 14px; --radius-sm: 10px;
+  --shadow: 0 1px 2px rgba(23, 21, 31, .05), 0 4px 14px rgba(23, 21, 31, .04);
+  --shadow-lg: 0 10px 30px rgba(91, 52, 230, .22);
+  --series-1: #2a78d6; --series-2: #eb6834;
 }
 @media (prefers-color-scheme: dark) {
   :root:not([data-theme="light"]) {
-    --bg: #101216;
-    --surface: #181b21;
-    --surface-2: #20242c;
-    --text: #e9ebf0;
-    --muted: #9aa1ae;
-    --border: #2c313b;
-    --accent: #7ea2ff;
-    --accent-hover: #9bb7ff;
-    --accent-text: #0d1117;
-    --accent-soft: #1d2740;
-    --danger: #ff8a80;
-    --danger-soft: #3a1c1a;
-    --warn-text: #ffd479;
-    --warn-soft: #34290f;
-    --ok: #6fd69d;
-    --ok-soft: #15301f;
-    --keep: #b9a0ff;
-    --keep-soft: #2a2140;
-    --focus: #9bb7ff;
-    --shadow: none;
+  --bg: #0f0e14; --surface: #191822; --surface-2: #232230; --text: #eceaf4; --muted: #a39fb6;
+  --border: #2f2d3f; --accent: #a48bff; --accent-hover: #b9a6ff; --accent-text: #120e24; --accent-soft: #272049;
+  --danger: #ff8a80; --danger-soft: #3a1c1a; --warn-text: #ffd479; --warn-soft: #34290f; --ok: #6fd69d; --ok-soft: #15301f;
+  --keep: #6fd3e6; --keep-soft: #12333a; --focus: #b9a6ff;
+  --shadow: 0 1px 0 rgba(255,255,255,.03) inset; --shadow-lg: 0 10px 30px rgba(0,0,0,.45);
+  --series-1: #3987e5; --series-2: #d95926;
   }
 }
 :root[data-theme="dark"] {
-  --bg: #101216; --surface: #181b21; --surface-2: #20242c; --text: #e9ebf0; --muted: #9aa1ae;
-  --border: #2c313b; --accent: #7ea2ff; --accent-hover: #9bb7ff; --accent-text: #0d1117; --accent-soft: #1d2740;
-  --danger: #ff8a80; --danger-soft: #3a1c1a; --warn-text: #ffd479; --warn-soft: #34290f; --ok: #6fd69d;
-  --ok-soft: #15301f; --keep: #b9a0ff; --keep-soft: #2a2140; --focus: #9bb7ff; --shadow: none;
+  --bg: #0f0e14; --surface: #191822; --surface-2: #232230; --text: #eceaf4; --muted: #a39fb6;
+  --border: #2f2d3f; --accent: #a48bff; --accent-hover: #b9a6ff; --accent-text: #120e24; --accent-soft: #272049;
+  --danger: #ff8a80; --danger-soft: #3a1c1a; --warn-text: #ffd479; --warn-soft: #34290f; --ok: #6fd69d; --ok-soft: #15301f;
+  --keep: #6fd3e6; --keep-soft: #12333a; --focus: #b9a6ff;
+  --shadow: 0 1px 0 rgba(255,255,255,.03) inset; --shadow-lg: 0 10px 30px rgba(0,0,0,.45);
+  --series-1: #3987e5; --series-2: #d95926;
 }
 
 * { box-sizing: border-box; }
@@ -70,205 +46,265 @@ html { -webkit-text-size-adjust: 100%; }
 body {
   margin: 0;
   background: var(--bg);
+  background-image: radial-gradient(900px 340px at 50% -120px, color-mix(in srgb, var(--accent) 16%, transparent), transparent 70%);
+  background-repeat: no-repeat;
   color: var(--text);
   font: 15px/1.5 system-ui, -apple-system, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+  -webkit-font-smoothing: antialiased;
 }
-.wrap { max-width: 920px; margin: 0 auto; padding: 24px max(16px, env(safe-area-inset-right)) calc(64px + env(safe-area-inset-bottom)) max(16px, env(safe-area-inset-left)); }
-h1 { font-size: 1.5rem; line-height: 1.25; margin: 0 0 4px; letter-spacing: -.01em; }
-h2 { font-size: 1.05rem; margin: 0 0 12px; }
+.wrap { max-width: 920px; margin: 0 auto; padding: 28px max(16px, env(safe-area-inset-right)) calc(64px + env(safe-area-inset-bottom)) max(16px, env(safe-area-inset-left)); }
+h1 { font-size: 1.45rem; line-height: 1.2; margin: 0; letter-spacing: -.02em; font-weight: 750; }
+h2 { font-size: 1.05rem; margin: 0 0 12px; letter-spacing: -.01em; }
 p { margin: 0 0 12px; }
+code { font-size: .9em; background: var(--surface-2); padding: 1px 5px; border-radius: 5px; }
 .muted { color: var(--muted); }
 .small { font-size: .875rem; }
 .vh { position: absolute !important; width: 1px; height: 1px; padding: 0; margin: -1px; overflow: hidden; clip: rect(0 0 0 0); white-space: nowrap; border: 0; }
 [hidden] { display: none !important; }
+:focus-visible { outline: 3px solid var(--focus); outline-offset: 2px; border-radius: 8px; }
 
-:focus-visible { outline: 3px solid var(--focus); outline-offset: 2px; border-radius: 6px; }
+.card { background: var(--surface); border: 1px solid var(--border); border-radius: var(--radius); box-shadow: var(--shadow); }
 
-.card {
-  background: var(--surface);
-  border: 1px solid var(--border);
-  border-radius: var(--radius);
-  box-shadow: var(--shadow);
-}
-
+/* Header */
 header.top { margin-bottom: 20px; }
-.privacy { display: inline-flex; gap: 6px; align-items: center; font-size: .85rem; color: var(--ok); background: var(--ok-soft); border-radius: 999px; padding: 3px 10px; margin-top: 8px; }
+.brand { display: flex; align-items: center; gap: 12px; margin-bottom: 10px; }
+.logo { width: 44px; height: 44px; border-radius: 13px; background: var(--grad); display: grid; place-items: center; flex: none; box-shadow: var(--shadow-lg); }
+.logo svg { width: 26px; height: 26px; }
+.brand p { margin: 2px 0 0; font-size: .9rem; }
+.privacy { display: inline-flex; gap: 6px; align-items: center; font-size: .82rem; font-weight: 550; color: var(--ok); background: var(--ok-soft); border-radius: 999px; padding: 4px 12px; }
 
-/* Drop zone */
+/* Picker */
 .drop {
-  display: block;
-  border: 2px dashed var(--border);
+  display: flex; flex-direction: column; align-items: center; gap: 4px;
+  border: 2px dashed color-mix(in srgb, var(--accent) 40%, var(--border));
   border-radius: var(--radius);
   background: var(--surface);
-  padding: 28px 16px;
-  text-align: center;
-  cursor: pointer;
-  transition: border-color .15s, background .15s;
+  padding: 30px 16px; text-align: center; cursor: pointer;
+  transition: border-color .15s, background .15s, transform .15s;
 }
 .drop:hover, .drop.over { border-color: var(--accent); background: var(--accent-soft); }
+.drop.over { transform: scale(1.01); }
 .drop:focus-within { outline: 3px solid var(--focus); outline-offset: 2px; }
-.drop strong { display: block; font-size: 1.05rem; margin-bottom: 4px; }
-.drop .pick { color: var(--accent); text-decoration: underline; }
-.drop .hint { display: block; margin-top: 6px; }
-.compact .drop { padding: 14px 16px; }
-.compact .drop > span { display: none; }
-
-.msg { margin-top: 12px; padding: 12px 14px; border-radius: var(--radius); }
-.msg.error { background: var(--danger-soft); color: var(--danger); border: 1px solid color-mix(in srgb, var(--danger) 30%, transparent); }
-.msg.info { background: var(--surface-2); color: var(--text); }
-.msg ul { margin: 6px 0 0; padding-left: 20px; }
-.loaded { margin-top: 10px; display: flex; flex-wrap: wrap; gap: 8px; align-items: center; }
-.chip { font-size: .8rem; background: var(--surface-2); border: 1px solid var(--border); border-radius: 999px; padding: 2px 10px; }
-
-/* Buttons */
-.btn, button {
-  font: inherit;
-  font-size: .9rem;
-  display: inline-flex; align-items: center; justify-content: center; gap: 6px;
-  min-height: 36px;
-  padding: 6px 12px;
-  border-radius: 8px;
-  border: 1px solid var(--border);
-  background: var(--surface);
-  color: var(--text);
-  cursor: pointer;
-  text-decoration: none;
-  white-space: nowrap;
-}
-.btn:hover, button:hover { background: var(--surface-2); }
-.btn.primary { background: var(--accent); color: var(--accent-text); border-color: var(--accent); }
-.btn.primary:hover { background: var(--accent-hover); border-color: var(--accent-hover); }
-button.link { border: 0; background: none; color: var(--accent); padding: 0 2px; min-height: 0; text-decoration: underline; }
-button.danger { color: var(--danger); }
-button:disabled { opacity: .5; cursor: not-allowed; }
-
-/* Summary */
-.stats { display: grid; grid-template-columns: repeat(5, minmax(0, 1fr)); gap: 10px; margin: 20px 0 16px; padding: 0; }
-.stat { padding: 12px 14px; margin: 0; }
-.stat dt { font-size: .8rem; color: var(--muted); }
-.stat dd { margin: 2px 0 0; font-size: 1.5rem; font-weight: 650; font-variant-numeric: tabular-nums; }
-.stat dd .sub { display: block; font-size: .78rem; font-weight: 400; color: var(--muted); }
-.stat.hl { border-color: var(--accent); }
-@media (max-width: 720px) { .stats { grid-template-columns: repeat(2, minmax(0, 1fr)); } .stat.hl { grid-column: 1 / -1; order: -1; } }
-
-.session { display: flex; flex-wrap: wrap; align-items: center; gap: 8px 14px; padding: 10px 14px; margin-bottom: 12px; }
-.session .count { font-weight: 650; font-variant-numeric: tabular-nums; }
-.warn { background: var(--warn-soft); color: var(--warn-text); border-radius: var(--radius); padding: 10px 14px; margin-bottom: 12px; }
-
-/* Toolbar */
-.toolbar { display: flex; flex-wrap: wrap; gap: 10px; align-items: end; margin-bottom: 8px; }
-.field { display: flex; flex-direction: column; gap: 4px; font-size: .8rem; color: var(--muted); }
-.field.grow { flex: 1 1 200px; }
-input[type="search"], select {
-  font: inherit; font-size: .95rem;
-  min-height: 38px; padding: 6px 10px;
-  border: 1px solid var(--border); border-radius: 8px;
-  background: var(--surface); color: var(--text);
-  width: 100%;
-}
-.check { display: inline-flex; align-items: center; gap: 6px; font-size: .9rem; color: var(--text); min-height: 38px; cursor: pointer; }
-.check input { width: 18px; height: 18px; margin: 0; accent-color: var(--accent); }
-.actions-bar { display: flex; flex-wrap: wrap; gap: 8px; justify-content: flex-end; margin-top: 16px; }
-
-/* Tabs */
-.tabs { display: flex; gap: 4px; border-bottom: 1px solid var(--border); position: sticky; top: 0; z-index: 5; background: var(--bg); padding-top: env(safe-area-inset-top); }
-.tab {
-  border: 0; border-bottom: 3px solid transparent; border-radius: 0;
-  background: none; color: var(--muted);
-  padding: 10px 12px; min-height: 44px; font-weight: 550;
-}
-.tab:hover { background: none; color: var(--text); }
-.tab[aria-selected="true"] { color: var(--text); border-bottom-color: var(--accent); }
-.tab .n { font-variant-numeric: tabular-nums; background: var(--surface-2); border-radius: 999px; padding: 0 7px; margin-left: 4px; font-size: .8rem; }
-.panel { padding-top: 12px; }
-.panel:focus-visible { outline-offset: -3px; }
-
-/* Rows */
-.list { overflow: hidden; }
-.rows { list-style: none; margin: 0; padding: 0; }
-.row { display: flex; align-items: center; gap: 12px; padding: 10px 14px; border-bottom: 1px solid var(--border); }
-.row:last-child { border-bottom: 0; }
-.who { flex: 1; min-width: 0; }
-.name { font-weight: 600; overflow-wrap: anywhere; }
-.date { display: block; font-size: .82rem; color: var(--muted); }
-.tag { font-size: .72rem; font-weight: 600; border-radius: 999px; padding: 1px 7px; margin-left: 6px; vertical-align: 1px; background: var(--accent-soft); color: var(--accent); }
-.row-actions { display: flex; gap: 8px; align-items: center; flex-wrap: wrap; justify-content: flex-end; }
-.done-chk { display: inline-flex; align-items: center; gap: 6px; min-height: 36px; padding: 0 10px; border: 1px solid var(--border); border-radius: 8px; cursor: pointer; font-size: .9rem; }
-.done-chk input { width: 18px; height: 18px; margin: 0; accent-color: var(--ok); }
-.done-chk:has(input:checked) { background: var(--ok-soft); border-color: var(--ok); color: var(--ok); }
-.keep[aria-pressed="true"] { background: var(--keep-soft); border-color: var(--keep); color: var(--keep); }
-.empty { padding: 24px 14px; text-align: center; color: var(--muted); }
-.pager { display: flex; align-items: center; justify-content: space-between; gap: 8px; padding: 10px 14px; border-top: 1px solid var(--border); background: var(--surface-2); font-size: .85rem; color: var(--muted); }
-.howto { margin-top: 12px; }
-.howto > summary { cursor: pointer; padding: 12px 14px; font-weight: 600; }
-.howto ol { margin: 0; padding: 0 14px 12px 34px; }
-.howto li { margin-bottom: 4px; }
+.drop .ico { width: 44px; height: 44px; border-radius: 50%; background: var(--accent-soft); color: var(--accent); display: grid; place-items: center; margin-bottom: 6px; }
+.drop .ico svg { width: 22px; height: 22px; }
+.drop strong { font-size: 1.08rem; }
+.drop .pick { color: var(--accent); font-weight: 600; text-decoration: underline; text-underline-offset: 2px; }
+.drop .hint { display: block; margin-top: 6px; max-width: 60ch; }
 .drop .touch { display: none; }
 @media (hover: none) and (pointer: coarse) {
   .drop .touch { display: inline; }
   .drop .mouse { display: none; }
 }
+.compact .drop { flex-direction: row; justify-content: center; gap: 10px; padding: 10px 16px; border-width: 1.5px; }
+.compact .drop > span:not(.ico) { display: none; }
+.compact .drop .ico { width: 30px; height: 30px; margin: 0; }
+.compact .drop .ico svg { width: 16px; height: 16px; }
+.compact .drop strong { font-size: .95rem; }
+
+.msg { margin-top: 12px; padding: 12px 14px; border-radius: var(--radius-sm); }
+.msg.error { background: var(--danger-soft); color: var(--danger); border: 1px solid color-mix(in srgb, var(--danger) 30%, transparent); }
+.msg.info { background: var(--surface-2); color: var(--text); }
+.msg ul { margin: 6px 0 0; padding-left: 20px; }
+.loaded { margin-top: 10px; display: flex; flex-wrap: wrap; gap: 8px; align-items: center; }
+.chip { font-size: .8rem; font-weight: 550; background: var(--surface); border: 1px solid var(--border); border-radius: 999px; padding: 3px 11px; }
+.howto { margin-top: 12px; }
+.howto > summary { cursor: pointer; padding: 13px 16px; font-weight: 600; }
+.howto ol { margin: 0; padding: 0 16px 14px 36px; }
+.howto li { margin-bottom: 5px; }
+
+/* Buttons */
+.btn, button {
+  font: inherit; font-size: .9rem; font-weight: 550;
+  display: inline-flex; align-items: center; justify-content: center; gap: 6px;
+  min-height: 38px; padding: 6px 14px;
+  border-radius: var(--radius-sm); border: 1px solid var(--border);
+  background: var(--surface); color: var(--text);
+  cursor: pointer; text-decoration: none; white-space: nowrap;
+  transition: background .12s, border-color .12s, transform .08s;
+}
+.btn:hover, button:hover { background: var(--surface-2); }
+.btn:active, button:active { transform: scale(.97); }
+.btn.primary { background: var(--accent); color: var(--accent-text); border-color: transparent; box-shadow: 0 2px 8px color-mix(in srgb, var(--accent) 35%, transparent); }
+.btn.primary:hover { background: var(--accent-hover); }
+.btn.primary svg { width: 14px; height: 14px; opacity: .85; }
+button.link { border: 0; background: none; color: var(--accent); padding: 0 2px; min-height: 0; text-decoration: underline; text-underline-offset: 2px; font-weight: 550; }
+button.danger { color: var(--danger); }
+button:disabled { opacity: .45; cursor: not-allowed; }
+
+/* Summary */
+.stats { display: grid; grid-template-columns: 1.7fr repeat(4, minmax(0, 1fr)); gap: 10px; margin: 20px 0 14px; padding: 0; }
+.stat { padding: 14px 16px; margin: 0; display: flex; flex-direction: column; justify-content: space-between; }
+.stat dt { font-size: .8rem; color: var(--muted); font-weight: 550; }
+.stat dd { margin: 4px 0 0; font-size: 1.55rem; font-weight: 750; letter-spacing: -.02em; font-variant-numeric: tabular-nums; }
+.stat.hl { background: var(--grad); border: 0; color: #fff; box-shadow: var(--shadow-lg); }
+.stat.hl dt { color: rgba(255,255,255,.88); }
+.stat.hl dd { font-size: 2.3rem; line-height: 1.1; }
+.stat.hl .sub { display: block; font-size: .82rem; font-weight: 500; letter-spacing: 0; color: rgba(255,255,255,.92); margin-top: 8px; }
+.prog { display: block; height: 6px; border-radius: 999px; background: rgba(255,255,255,.28); overflow: hidden; margin-top: 6px; }
+.prog i { display: block; height: 100%; border-radius: 999px; background: #fff; transition: width .3s; }
+@media (max-width: 720px) { .stats { grid-template-columns: repeat(4, minmax(0, 1fr)); } .stat.hl { grid-column: 1 / -1; } }
+
+.session { display: flex; flex-wrap: wrap; align-items: center; gap: 8px 14px; padding: 10px 16px; margin-bottom: 12px; }
+.session .count { font-weight: 750; font-variant-numeric: tabular-nums; }
+.meter { flex: 1 1 80px; max-width: 160px; height: 6px; border-radius: 999px; background: var(--surface-2); overflow: hidden; }
+.meter i { display: block; height: 100%; border-radius: 999px; background: var(--accent); transition: width .3s; }
+.meter.full i { background: #d9930a; }
+.session .link { margin-left: auto; }
+.warn { background: var(--warn-soft); color: var(--warn-text); border-radius: var(--radius-sm); padding: 12px 14px; margin-bottom: 12px; }
+
+/* Section switcher */
+.views { display: flex; gap: 8px; overflow-x: auto; scrollbar-width: none; margin: 16px 0 14px; padding: 2px; }
+.views::-webkit-scrollbar { display: none; }
+.view-btn { border-radius: 999px; flex: 0 0 auto; padding: 6px 16px; box-shadow: var(--shadow); }
+.view-btn[aria-current="page"] { background: var(--grad); color: #fff; border-color: transparent; box-shadow: var(--shadow-lg); }
+.view-btn .n { font-variant-numeric: tabular-nums; background: var(--accent); color: var(--accent-text); border-radius: 999px; padding: 0 7px; font-size: .76rem; font-weight: 700; }
+.view-btn[aria-current="page"] .n { background: rgba(255,255,255,.25); color: #fff; }
+
+/* Toolbar */
+.toolbar { display: flex; flex-wrap: wrap; gap: 10px; align-items: end; margin-bottom: 12px; }
+.field { display: flex; flex-direction: column; gap: 4px; font-size: .8rem; font-weight: 550; color: var(--muted); }
+.field.grow { flex: 1 1 200px; }
+input[type="search"], select {
+  font: inherit; font-size: .95rem; min-height: 40px; padding: 6px 12px;
+  border: 1px solid var(--border); border-radius: var(--radius-sm);
+  background: var(--surface); color: var(--text); width: 100%;
+  transition: border-color .12s, box-shadow .12s;
+}
+input[type="search"]:focus, select:focus { border-color: var(--accent); box-shadow: 0 0 0 3px var(--accent-soft); outline: 0; }
+.check { display: inline-flex; align-items: center; gap: 7px; font-size: .9rem; color: var(--text); min-height: 40px; cursor: pointer; }
+.check input { width: 18px; height: 18px; margin: 0; accent-color: var(--accent); }
+.actions-bar { display: flex; flex-wrap: wrap; gap: 8px; justify-content: flex-end; margin-top: 16px; }
+
+/* Inner tabs: segmented control */
+.tabs { display: flex; gap: 4px; padding: 4px; background: var(--surface-2); border-radius: 13px; position: sticky; top: max(6px, env(safe-area-inset-top)); z-index: 5; box-shadow: 0 0 0 6px var(--bg); }
+.tab { flex: 1 1 0; border: 0; border-radius: 10px; background: none; color: var(--muted); padding: 8px 10px; min-height: 40px; font-weight: 600; white-space: normal; line-height: 1.25; }
+.tab:hover { background: none; color: var(--text); }
+.tab[aria-selected="true"] { color: var(--text); background: var(--surface); box-shadow: 0 1px 3px rgba(0,0,0,.12); }
+.tab .n { font-variant-numeric: tabular-nums; background: var(--surface-2); border-radius: 999px; padding: 0 7px; font-size: .78rem; }
+.tab[aria-selected="true"] .n { background: var(--accent-soft); color: var(--accent); }
+.panel { padding-top: 14px; }
+
+/* Rows */
+.list { overflow: hidden; }
+.rows { list-style: none; margin: 0; padding: 0; }
+.row { display: flex; align-items: center; gap: 12px; padding: 11px 16px; border-bottom: 1px solid var(--border); transition: background .12s; }
+.row:last-child { border-bottom: 0; }
+@media (hover: hover) { .row:hover { background: color-mix(in srgb, var(--accent-soft) 45%, transparent); } }
+.av { width: 40px; height: 40px; border-radius: 50%; flex: none; display: grid; place-items: center; color: #fff; font-weight: 700; font-size: 1rem;
+  background: linear-gradient(135deg, hsl(var(--h) 62% 52%), hsl(calc(var(--h) + 45) 62% 40%)); }
+.who { flex: 1; min-width: 0; }
+.name { font-weight: 650; overflow-wrap: anywhere; }
+.date { display: block; font-size: .82rem; color: var(--muted); }
+.tag { font-size: .7rem; font-weight: 700; border-radius: 999px; padding: 1px 8px; margin-left: 6px; vertical-align: 1px; background: var(--accent-soft); color: var(--accent); }
+.row-actions { display: flex; gap: 8px; align-items: center; flex-wrap: wrap; justify-content: flex-end; }
+.done-chk { display: inline-flex; align-items: center; gap: 7px; min-height: 38px; padding: 0 12px; border: 1px solid var(--border); border-radius: var(--radius-sm); cursor: pointer; font-size: .9rem; font-weight: 550; transition: background .12s, border-color .12s; }
+.done-chk:hover { background: var(--surface-2); }
+.done-chk input { width: 18px; height: 18px; margin: 0; accent-color: var(--ok); }
+.done-chk:has(input:checked) { background: var(--ok-soft); border-color: var(--ok); color: var(--ok); }
+.keep[aria-pressed="true"] { background: var(--keep-soft); border-color: var(--keep); color: var(--keep); }
+.empty { padding: 30px 16px; text-align: center; color: var(--muted); margin: 0; }
+.pager { display: flex; align-items: center; justify-content: space-between; gap: 8px; padding: 10px 14px; border-top: 1px solid var(--border); background: var(--surface-2); font-size: .85rem; color: var(--muted); }
+
+details.sec { margin-top: 14px; overflow: hidden; }
+details.sec > summary { cursor: pointer; padding: 13px 16px; font-weight: 650; list-style-position: inside; }
+details.sec > summary:hover { background: var(--surface-2); }
+details.sec[open] > summary { border-bottom: 1px solid var(--border); }
+details.sec .list { border: 0; border-radius: 0; box-shadow: none; }
+.sec .desc { padding: 10px 16px 0; margin: 0 0 10px; }
+.sec-first { margin-top: 0 !important; }
+.note { background: var(--surface); border: 1px solid var(--border); border-left: 4px solid var(--accent); border-radius: var(--radius-sm); padding: 14px 16px; box-shadow: var(--shadow); }
+.note.warnish { background: var(--warn-soft); color: var(--warn-text); border-color: transparent; border-left-color: #d9930a; box-shadow: none; }
+.chg-bar { display: flex; flex-wrap: wrap; gap: 10px; align-items: end; justify-content: space-between; margin-bottom: 12px; }
+
+/* Timeline chart */
+.viz { padding: 16px; }
+.viz-head { display: flex; flex-wrap: wrap; gap: 10px 16px; align-items: end; justify-content: space-between; margin-bottom: 10px; }
+.legend { display: flex; flex-wrap: wrap; gap: 4px 16px; font-size: .85rem; color: var(--muted); margin: 0; padding: 0; list-style: none; }
+.legend i { display: inline-block; width: 10px; height: 10px; border-radius: 3px; margin-right: 6px; }
+.chart-row { display: flex; }
+.chart-row .yaxis { flex: none; }
+.chart-row text { font: 11px system-ui, -apple-system, "Segoe UI", sans-serif; fill: var(--muted); }
+.chart-scroll { overflow-x: auto; position: relative; flex: 1 1 auto; min-width: 0; }
+.chart-scroll svg { display: block; }
+.chart-scroll text.val { fill: var(--text); font-size: 10px; }
+.chart-scroll .grid { stroke: var(--border); stroke-width: 1; }
+.chart-scroll .hit { fill: transparent; }
+.chart-scroll .hit:hover, .chart-scroll .hit.on { fill: var(--surface-2); }
+.chart-scroll .bar { pointer-events: none; }
+.tip { position: absolute; pointer-events: none; z-index: 3; background: var(--surface); border: 1px solid var(--border); border-radius: 10px; box-shadow: 0 6px 20px rgba(0,0,0,.18); padding: 8px 10px; font-size: .82rem; min-width: 150px; }
+.tip b.t { display: block; margin-bottom: 4px; }
+.tip .r { display: flex; align-items: center; gap: 6px; color: var(--muted); white-space: nowrap; }
+.tip .r i { width: 12px; height: 3px; border-radius: 2px; flex: none; }
+.tip .r strong { color: var(--text); font-variant-numeric: tabular-nums; }
+.facts { margin: 14px 0 0; padding: 0; list-style: none; display: grid; gap: 6px; }
+.facts li { background: var(--surface-2); border-radius: var(--radius-sm); padding: 9px 13px; font-size: .9rem; }
+.tbl { width: 100%; border-collapse: collapse; font-size: .88rem; font-variant-numeric: tabular-nums; }
+.tbl th, .tbl td { text-align: right; padding: 7px 16px; border-top: 1px solid var(--border); }
+.tbl th:first-child, .tbl td:first-child { text-align: left; }
+.tbl thead th { border-top: 0; color: var(--muted); font-weight: 600; }
+
+footer { margin-top: 36px; padding-top: 16px; border-top: 1px solid var(--border); font-size: .83rem; color: var(--muted); }
+footer .wipe { margin-top: 4px; }
 
 /* Phone layout */
 @media (max-width: 560px) {
-  .wrap { padding-top: 16px; }
-  h1 { font-size: 1.3rem; }
+  .wrap { padding-top: 18px; }
+  h1 { font-size: 1.25rem; }
   /* 16px inputs stop iOS from zooming the page on focus */
-  input[type="search"], select { font-size: 16px; min-height: 44px; }
+  input[type="search"], select { font-size: 16px; min-height: 46px; }
   .btn, button, .done-chk, .check { min-height: 44px; }
   button.link { min-height: 0; padding: 10px 4px; }
 
-  .stats { grid-template-columns: repeat(4, minmax(0, 1fr)); gap: 6px; margin: 14px 0 10px; }
-  .stat { padding: 8px 8px; }
+  .stats { gap: 8px; margin: 16px 0 12px; }
+  .stat { padding: 9px 9px; }
   .stat dt { font-size: .68rem; line-height: 1.2; min-height: 2.4em; }
-  .stat dd { font-size: 1.05rem; }
-  .stat.hl { padding: 12px 14px; }
-  .stat.hl dt { font-size: .8rem; min-height: 0; }
-  .stat.hl dd { font-size: 1.6rem; }
+  .stat dd { font-size: 1.1rem; }
+  .stat.hl { padding: 16px 18px; }
+  .stat.hl dt { font-size: .85rem; min-height: 0; }
+  .stat.hl dd { font-size: 2.4rem; }
 
-  .session { padding: 4px 14px; margin-bottom: 10px; justify-content: space-between; }
+  .session { padding: 4px 14px; margin-bottom: 4px; flex-wrap: nowrap; gap: 10px; }
+  .session > span:first-child { white-space: nowrap; }
+  .meter { flex: 1 1 20px; min-width: 20px; }
   .toolbar .lbl { position: absolute; width: 1px; height: 1px; overflow: hidden; clip: rect(0 0 0 0); white-space: nowrap; }
   .toolbar .field.grow { flex-basis: 100%; }
   .toolbar .field:not(.grow) { flex: 1 1 0; min-width: 0; }
+  .views { margin: 14px -16px 12px; padding: 2px 16px 8px; }
 
-  .tabs { gap: 0; margin: 0 -16px; padding-left: 8px; padding-right: 8px; }
-  .tab { flex: 1 1 0; min-width: 0; white-space: normal; padding: 8px 4px; font-size: .8rem; line-height: 1.25; flex-direction: column; gap: 2px; }
-  .tab .n { margin-left: 0; }
-
-  .row { padding: 12px 14px; }
-  .row.marks { flex-wrap: wrap; gap: 10px; }
+  .tab { padding: 7px 4px; font-size: .8rem; flex-direction: column; gap: 2px; }
+  .row { padding: 13px 14px; }
+  .row.marks { flex-wrap: wrap; gap: 10px 12px; }
   .row.marks .row-actions { width: 100%; display: grid; grid-template-columns: 1fr 1fr 1.5fr; }
   .row.marks .row-actions > * { width: 100%; justify-content: center; }
   .pager { padding: 8px 10px; }
   .actions-bar > * { flex: 1 1 0; white-space: normal; }
 }
-
-details.sec { margin-top: 14px; }
-details.sec > summary { cursor: pointer; padding: 10px 14px; font-weight: 600; list-style-position: inside; border-radius: var(--radius); }
-details.sec[open] > summary { border-bottom: 1px solid var(--border); border-radius: var(--radius) var(--radius) 0 0; }
-details.sec .list { border: 0; border-radius: 0; box-shadow: none; }
-
-footer { margin-top: 32px; font-size: .85rem; color: var(--muted); }
-footer ol { padding-left: 20px; }
+@media (prefers-reduced-motion: reduce) { * { transition: none !important; } }
 </style>
 </head>
 <body>
 <div class="wrap">
   <header class="top">
-    <h1>Who doesn't follow you back</h1>
-    <p class="muted">Load your Instagram data export to compare your followers and following lists.</p>
-    <span class="privacy">🔒 Runs entirely in this page. Your files are never uploaded.</span>
+    <div class="brand">
+      <span class="logo" aria-hidden="true"><svg viewBox="0 0 24 24" fill="none" stroke="#fff" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="9" cy="8" r="3.5"/><path d="M2.5 20c.4-3.6 3-6 6.5-6 1.6 0 3 .5 4.1 1.3"/><path d="M15 17.5l2.5 2.5 4.5-5"/></svg></span>
+      <div>
+        <h1>Instagram follow checker</h1>
+        <p class="muted">Who doesn't follow you back, who unfollowed you, pending requests and more.</p>
+      </div>
+    </div>
+    <span class="privacy">🔒 Runs in this page. Nothing is uploaded.</span>
   </header>
 
   <section id="loader" aria-labelledby="loader-h">
     <h2 id="loader-h" class="vh">Load your export</h2>
     <label class="drop" id="drop">
       <input type="file" id="file" class="vh" multiple accept=".zip,.json,.html,application/zip,application/x-zip-compressed,application/json,text/html">
+      <span class="ico" aria-hidden="true"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 16V4"/><path d="M7 9l5-5 5 5"/><path d="M4 16v3a1 1 0 0 0 1 1h14a1 1 0 0 0 1-1v-3"/></svg></span>
       <strong class="mouse">Drop your export here</strong>
       <span class="mouse">the .zip, the unzipped folder, or the JSON files &middot; <span class="pick">or choose files</span></span>
       <strong class="touch">Tap to choose your export</strong>
       <span class="touch">the .zip Instagram sent you, or the JSON files</span>
-      <span class="hint muted small">Needs <code>followers_1.json</code> (and any <code>followers_2.json</code>…) plus <code>following.json</code> from <code>connections/followers_and_following/</code>. Drop them all at once.</span>
+      <span class="hint muted small">Needs <code>followers_1.json</code> (and any <code>followers_2.json</code>…) plus <code>following.json</code> from <code>connections/followers_and_following/</code>. The other files in that folder (pending requests, close friends, blocked…) are read too. Drop them all at once.</span>
     </label>
     <div id="error" class="msg error" role="alert" hidden></div>
     <div id="status" class="msg info" role="status" hidden></div>
@@ -290,26 +326,36 @@ footer ol { padding-left: 20px; }
     <dl class="stats" id="stats"></dl>
 
     <div class="card session" id="session">
-      <span>Profiles opened this session: <span class="count" id="opened-count">0</span></span>
+      <span>Opened this session: <span class="count" id="opened-count">0</span></span>
+      <span class="meter" id="meter" aria-hidden="true"><i></i></span>
       <button type="button" class="link" id="reset-session">Reset counter</button>
     </div>
     <div class="warn" id="warn" role="status" hidden></div>
 
-    <div class="toolbar">
+    <nav class="views" aria-label="Sections">
+      <button type="button" class="view-btn" data-view="followback" aria-current="page">Follow-back</button>
+      <button type="button" class="view-btn" data-view="changes">Changes<span class="n" id="n-changes" hidden></span></button>
+      <button type="button" class="view-btn" data-view="requests">Requests<span class="n" id="n-requests" hidden></span></button>
+      <button type="button" class="view-btn" data-view="lists">Other lists</button>
+      <button type="button" class="view-btn" data-view="timeline">Timeline</button>
+    </nav>
+
+    <div class="toolbar" id="toolbar">
       <label class="field grow"><span class="lbl">Search</span>
         <input type="search" id="q" placeholder="Filter by username" autocomplete="off" spellcheck="false">
       </label>
       <label class="field"><span class="lbl">Sort</span>
         <select id="sort">
-          <option value="date-asc">Oldest follow first</option>
-          <option value="date-desc">Newest follow first</option>
+          <option value="date-asc">Oldest first</option>
+          <option value="date-desc">Newest first</option>
           <option value="name-asc">Username A–Z</option>
           <option value="name-desc">Username Z–A</option>
         </select>
       </label>
-      <label class="check"><input type="checkbox" id="hide-dk"> Hide Done &amp; Keep</label>
+      <label class="check" id="hide-dk-wrap"><input type="checkbox" id="hide-dk"> Hide Done &amp; Keep</label>
     </div>
 
+    <div id="view-followback">
     <div class="tabs" role="tablist" aria-label="Lists">
       <button type="button" class="tab" role="tab" id="tab-dfb" aria-controls="panel-dfb" aria-selected="true">Don't follow me back<span class="n" id="n-dfb">0</span></button>
       <button type="button" class="tab" role="tab" id="tab-idfb" aria-controls="panel-idfb" aria-selected="false" tabindex="-1">I don't follow back<span class="n" id="n-idfb">0</span></button>
@@ -340,12 +386,27 @@ footer ol { padding-left: 20px; }
       <button type="button" id="export">Export remaining as CSV</button>
       <button type="button" id="reset" class="danger">Reset progress</button>
     </div>
+    </div>
+
+    <div id="view-changes" hidden>
+      <div id="chg-head"></div>
+      <div id="chg-lists">
+        <details class="card sec sec-first" open><summary>Unfollowed you (<span id="n-chg-lost">0</span>)</summary><div class="card list" data-list="chg-lost"></div></details>
+        <details class="card sec"><summary>New followers (<span id="n-chg-gained">0</span>)</summary><div class="card list" data-list="chg-gained"></div></details>
+        <details class="card sec"><summary>You unfollowed (<span id="n-chg-unfollowed">0</span>)</summary><div class="card list" data-list="chg-unfollowed"></div></details>
+        <details class="card sec"><summary>You started following (<span id="n-chg-followed">0</span>)</summary><div class="card list" data-list="chg-followed"></div></details>
+      </div>
+    </div>
+    <div id="view-requests" hidden></div>
+    <div id="view-lists" hidden></div>
+    <div id="view-timeline" hidden></div>
   </section>
 
   <div id="live" class="vh" aria-live="polite"></div>
 
   <footer>
-    <p>This page makes no network requests. So you can switch to Instagram and back without reloading your export, the loaded lists and your Done/Keep progress are saved in this browser only (localStorage); Clear removes the lists. Nothing here unfollows anyone; you do that yourself on Instagram.</p>
+    <p>This page makes no network requests and nothing here unfollows anyone; you do that yourself on Instagram. So you can switch to Instagram and back, and so the Changes section can compare exports over time, your loaded lists, a snapshot of your follower and following usernames, and your Done/Keep progress are saved in this browser only (localStorage).</p>
+    <p class="wipe"><button type="button" class="link danger" id="wipe">Delete everything saved on this device</button></p>
   </footer>
 </div>
 
@@ -358,6 +419,23 @@ const WARN_AT = 25;
 const LS_KEY = 'igFollowBack.progress.v1';
 const SS_KEY = 'igFollowBack.session.v1';
 const LISTS_KEY = 'igFollowBack.lists.v1';
+const SNAP_KEY = 'igFollowBack.snapshot.v1';
+const HIST_KEY = 'igFollowBack.history.v1';
+const MAX_HISTORY = 30;
+
+// Optional lists from the same export folder. Anything not present is simply shown as "not loaded".
+const EXTRA = [
+  { kind: 'pending', view: 'requests', re: /^pending_follow_requests(_\d+)?\.json$/, file: 'pending_follow_requests.json', title: 'Requests you sent, still pending', date: 'Requested ', desc: "These accounts haven't accepted your follow request. Open the profile to cancel the request on Instagram.", open: true },
+  { kind: 'received', view: 'requests', re: /^follow_requests_you'?ve_received(_\d+)?\.json$/, file: "follow_requests_you've_received.json", title: 'Requests you received', date: 'Requested ', desc: 'People waiting for you to accept or decline.' },
+  { kind: 'unfollowed', view: 'lists', re: /^recently_unfollowed_(profiles|accounts)(_\d+)?\.json$/, file: 'recently_unfollowed_profiles.json', title: 'Recently unfollowed by you', date: 'Unfollowed ', open: true },
+  { kind: 'close', view: 'lists', re: /^close_friends(_\d+)?\.json$/, file: 'close_friends.json', title: 'Close friends', date: 'Added ' },
+  { kind: 'blocked', view: 'lists', re: /^blocked_(profiles|accounts)(_\d+)?\.json$/, file: 'blocked_profiles.json', title: 'Blocked', date: 'Blocked ' },
+  { kind: 'restricted', view: 'lists', re: /^restricted_(profiles|accounts)(_\d+)?\.json$/, file: 'restricted_profiles.json', title: 'Restricted', date: 'Restricted ' },
+  { kind: 'hidden', view: 'lists', re: /^hide_story_from(_\d+)?\.json$/, file: 'hide_story_from.json', title: 'Hiding your story from', date: 'Since ' },
+];
+const DATE_LABEL = { dfb: 'You followed ', mutual: 'You followed ', idfb: 'Followed you ', 'chg-gained': 'Followed you ', 'chg-followed': 'You followed ' };
+const LIST_LABEL = { main: "Don't follow you back", done: 'Done', keep: 'Keep', idfb: "You don't follow back", mutual: 'Mutuals', 'chg-lost': 'Unfollowed you', 'chg-gained': 'New followers', 'chg-unfollowed': 'You unfollowed', 'chg-followed': 'You started following' };
+for (const x of EXTRA) { DATE_LABEL[x.kind] = x.date; LIST_LABEL[x.kind] = x.title; }
 
 const $ = (s, r = document) => r.querySelector(s);
 const esc = (s) => String(s).replace(/[&<>"']/g, (c) => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[c]));
@@ -439,6 +517,7 @@ function classify(path) {
   if (/^followers(_\d+)?\.json$/.test(base)) return 'followers';
   if (base === 'following.json') return 'following';
   if (/^followers(_\d+)?\.html$/.test(base) || base === 'following.html') return 'html';
+  for (const x of EXTRA) if (x.re.test(base)) return x.kind;
   return null;
 }
 
@@ -490,7 +569,9 @@ async function readZipEntries(file) {
       }
       x += 4 + sz;
     }
-    entries.push({ name, flags, method, comp, uncomp, off });
+    const dt = cd.getUint16(p + 12, true), dd = cd.getUint16(p + 14, true);
+    const time = new Date(1980 + (dd >> 9), ((dd >> 5) & 15) - 1, dd & 31, dt >> 11, (dt >> 5) & 63, (dt & 31) * 2).getTime() || 0;
+    entries.push({ name, flags, method, comp, uncomp, off, time });
     p = xend + cl;
   }
   return entries;
@@ -535,8 +616,21 @@ const state = {
   query: '',
   sort: 'date-asc',
   hideDK: false,
-  pages: { main: 0, done: 0, keep: 0, idfb: 0, mutual: 0 },
+  pages: {},
+  view: 'followback',
+  history: [],       // newest first: { id, from, to, lost, gained, unfollowed, followed }
+  snapTime: 0,
+  changeNote: '',    // '' | 'older' | 'nosave'
+  chgIdx: 0,
+  tlGran: 'auto',
 };
+{
+  const s = localStore();
+  const h = s && lsGet(HIST_KEY, s);
+  if (Array.isArray(h)) state.history = h.filter((r) => r && Array.isArray(r.lost) && Array.isArray(r.gained));
+  const snap = s && lsGet(SNAP_KEY, s);
+  if (snap && snap.time) state.snapTime = snap.time;
+}
 
 // Phones often discard a background tab while you're in the Instagram app, so keep the parsed
 // lists on this device and restore them on load. Nothing is sent anywhere.
@@ -555,7 +649,7 @@ function restoreLists() {
   if (!v || !Array.isArray(v.sources)) return;
   try {
     for (const x of v.sources) {
-      if (x.kind !== 'followers' && x.kind !== 'following') continue;
+      if (x.kind !== 'followers' && x.kind !== 'following' && !EXTRA.some((e) => e.kind === x.kind)) continue;
       state.sources.set(String(x.key), { key: String(x.key), kind: x.kind, label: String(x.label), entries: x.entries.map(([u, ts]) => ({ u: normalize(u), ts: Number(ts) || 0 })) });
     }
   } catch { state.sources.clear(); return; }
@@ -564,6 +658,7 @@ function restoreLists() {
   const kinds = new Set([...state.sources.values()].map((x) => x.kind));
   if (kinds.has('followers') && kinds.has('following')) {
     compute();
+    if (!state.snapTime) trackChanges(v.savedAt || Date.now());
     showResults(true);
     showStatus(`Restored the lists you loaded on ${df.format(new Date(v.savedAt || Date.now()))}. They're stored only in this browser. Choose a newer export to replace them, or Clear to remove them.`);
   }
@@ -598,12 +693,12 @@ async function ingest(items) {
         const inFolder = rel.filter((x) => /(^|\/)followers_and_following\//i.test(x.e.name));
         for (const x of (inFolder.length ? inFolder : rel)) {
           if (x.kind === 'html') { sawHtml = true; continue; }
-          found.push({ kind: x.kind, key: file.name + '/' + x.e.name, label: x.e.name.split('/').pop(), read: () => readZipEntryText(file, x.e) });
+          found.push({ kind: x.kind, key: file.name + '/' + x.e.name, label: x.e.name.split('/').pop(), mtime: x.e.time, read: () => readZipEntryText(file, x.e) });
         }
       } else {
         const kind = classify(path);
         if (kind === 'html') sawHtml = true;
-        else if (kind) found.push({ kind, key: path, label: file.name, read: () => file.text() });
+        else if (kind) found.push({ kind, key: path, label: file.name, mtime: file.lastModified || 0, read: () => file.text() });
       }
     } catch (err) {
       errors.push(`${esc(file.name)} ${esc(err.message)}`);
@@ -619,7 +714,7 @@ async function ingest(items) {
       try { json = JSON.parse(text); } catch { errors.push(`${esc(f.label)} isn't valid JSON.`); continue; }
       const { entries, skipped } = extractEntries(json, f.kind);
       if (skipped) errors.push(`${esc(f.label)}: skipped ${skipped} entr${skipped === 1 ? 'y' : 'ies'} with no username.`);
-      fresh.push({ key: f.key, kind: f.kind, label: f.label, entries });
+      fresh.push({ key: f.key, kind: f.kind, label: f.label, entries, mtime: f.mtime });
     } catch (err) {
       errors.push(`${esc(f.label)} ${esc(err.message)}`);
     }
@@ -635,7 +730,7 @@ async function ingest(items) {
   if (!fresh.length) {
     if (sawHtml) problems.push(HTML_ERR);
     else if (zips) problems.push("<b>Couldn't find your followers and following lists in that zip.</b> Look for <code>connections/followers_and_following/</code>. If Instagram split your export into several zip files, drop all of them together, and make sure the export included <i>Followers and following</i>.");
-    else if (!errors.length) problems.push('<b>None of those files are followers or following lists.</b> Expected <code>followers_1.json</code> and <code>following.json</code>.');
+    else if (!errors.length) problems.push('<b>None of those files are lists this page understands.</b> Expected <code>followers_1.json</code> and <code>following.json</code>.');
   } else if (sawHtml) {
     problems.push('Some files were HTML and were ignored. ' + HTML_ERR);
   }
@@ -651,22 +746,99 @@ async function ingest(items) {
 
   saveLists();
   renderLoaded();
-  if (hasF && hasG) { compute(); showResults(true); } else showResults(false);
+  if (hasF && hasG) {
+    compute();
+    if (kindsInBatch.has('followers') || kindsInBatch.has('following')) {
+      const times = fresh.filter((f) => f.kind === 'followers' || f.kind === 'following').map((f) => f.mtime || 0);
+      trackChanges(Math.max(0, ...times) || Date.now());
+    }
+    showResults(true);
+  } else showResults(false);
 }
 
 function renderLoaded() {
   const el = $('#loaded');
   if (!state.sources.size) { el.hidden = true; el.innerHTML = ''; return; }
-  const chips = [...state.sources.values()]
-    .sort((a, b) => a.kind.localeCompare(b.kind) || a.label.localeCompare(b.label, undefined, { numeric: true }))
-    .map((s) => `<span class="chip">${esc(s.label)} &middot; ${nf.format(s.entries.length)}</span>`).join('');
+  const src = [...state.sources.values()];
+  const group = (kind, name) => {
+    const g = src.filter((x) => x.kind === kind);
+    if (!g.length) return '';
+    const n = g.reduce((t, x) => t + x.entries.length, 0);
+    return `<span class="chip">${name} &middot; ${nf.format(n)}${g.length > 1 ? ` (${g.length} files)` : ''}</span>`;
+  };
+  const others = new Set(src.filter((x) => kindRank(x.kind) === 2).map((x) => x.kind)).size;
+  const chips = group('followers', 'Followers') + group('following', 'Following') + (others ? `<span class="chip">+ ${others} other list${others === 1 ? '' : 's'}</span>` : '');
   el.innerHTML = `<span class="muted">Loaded:</span>${chips}<button type="button" class="link" id="clear">Clear</button>`;
   el.hidden = false;
+}
+
+function kindRank(k) { return k === 'followers' ? 0 : k === 'following' ? 1 : 2; }
+
+// Merged, de-duplicated entries for one optional list; null when that file wasn't loaded.
+function extraList(kind) {
+  let m = null;
+  for (const s of state.sources.values()) {
+    if (s.kind !== kind) continue;
+    m = m || new Map();
+    for (const { u, ts } of s.entries) if (!m.has(u) || (ts && !m.get(u))) m.set(u, ts);
+  }
+  return m && [...m].map(([u, ts]) => ({ u, ts }));
+}
+
+/* ---------------- change tracking between exports ---------------- */
+function trackChanges(exportTime) {
+  const s = localStore();
+  const d = state.data;
+  state.changeNote = '';
+  if (!s || !d) { state.changeNote = 'nosave'; return; }
+  const cur = { time: exportTime, followers: [...d.followers.keys()], following: [...d.following.keys()] };
+  const prev = lsGet(SNAP_KEY, s);
+  if (!prev || !Array.isArray(prev.followers) || !Array.isArray(prev.following)) {
+    if (lsSet(SNAP_KEY, cur, s)) state.snapTime = cur.time; else state.changeNote = 'nosave';
+    return;
+  }
+  const pf = new Set(prev.followers), pg = new Set(prev.following);
+  const rec = {
+    id: Date.now(), from: prev.time, to: exportTime,
+    lost: prev.followers.filter((u) => !d.followers.has(u)),
+    gained: cur.followers.filter((u) => !pf.has(u)),
+    unfollowed: prev.following.filter((u) => !d.following.has(u)),
+    followed: cur.following.filter((u) => !pg.has(u)),
+  };
+  if (!rec.lost.length && !rec.gained.length && !rec.unfollowed.length && !rec.followed.length) return; // same export again
+  if (exportTime < prev.time - 60000) { state.changeNote = 'older'; return; }
+  if (!lsSet(SNAP_KEY, cur, s)) { state.changeNote = 'nosave'; return; }
+  state.snapTime = cur.time;
+  state.history.unshift(rec);
+  state.history.length = Math.min(state.history.length, MAX_HISTORY);
+  state.chgIdx = 0;
+  lsSet(HIST_KEY, state.history, s);
+}
+
+// Remove the newest comparison and roll the stored snapshot back to what it was before it.
+function undoLatestChange() {
+  const s = localStore();
+  const rec = state.history[0];
+  if (!s || !rec) return;
+  const snap = lsGet(SNAP_KEY, s);
+  if (snap && Array.isArray(snap.followers)) {
+    const g = new Set(rec.gained), f = new Set(rec.followed);
+    const prev = {
+      time: rec.from,
+      followers: snap.followers.filter((u) => !g.has(u)).concat(rec.lost),
+      following: snap.following.filter((u) => !f.has(u)).concat(rec.unfollowed),
+    };
+    if (lsSet(SNAP_KEY, prev, s)) state.snapTime = prev.time;
+  }
+  state.history.shift();
+  state.chgIdx = 0;
+  lsSet(HIST_KEY, state.history, s);
 }
 
 function compute() {
   const followers = new Map(), following = new Map();
   for (const s of state.sources.values()) {
+    if (s.kind !== 'followers' && s.kind !== 'following') continue;
     const m = s.kind === 'followers' ? followers : following;
     for (const { u, ts } of s.entries) {
       const prev = m.get(u);
@@ -707,25 +879,32 @@ function sorted(items) {
   return arr;
 }
 
+function avatar(u) {
+  let h = 0;
+  for (let i = 0; i < u.length; i++) h = (h * 31 + u.charCodeAt(i)) % 360;
+  const ch = (u.match(/[a-z0-9]/i) || ['?'])[0].toUpperCase();
+  return `<span class="av" style="--h:${h}" aria-hidden="true">${esc(ch)}</span>`;
+}
+const OPEN_ICON = '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M7 17L17 7"/><path d="M8 7h9v9"/></svg>';
 function rowHtml(item, mode) {
   const u = item.u;
   const status = progress[u];
   const opened = openedSet.has(u);
-  const dateLabel = mode === 'idfb' ? 'Followed you ' : 'You followed ';
+  const sub = item.note ? esc(item.note) : esc((DATE_LABEL[mode] || '') + fmtDate(item.ts));
   let actions = '';
   if (mode === 'dfb') {
     actions += `<label class="done-chk"><input type="checkbox" data-act="done" data-u="${esc(u)}"${status === 'done' ? ' checked' : ''}> Done<span class="vh"> (unfollowed @${esc(u)})</span></label>`;
     actions += `<button type="button" class="keep" data-act="keep" data-u="${esc(u)}" aria-pressed="${status === 'keep'}">Keep<span class="vh"> following @${esc(u)}</span></button>`;
   }
-  actions += `<a class="btn primary" data-act="open" data-u="${esc(u)}" href="${esc(profileUrl(u))}" target="_blank" rel="noopener noreferrer">Open profile<span class="vh"> of @${esc(u)} (opens in a new tab)</span></a>`;
-  return `<li class="row${mode === 'dfb' ? ' marks' : ''}"><div class="who"><span class="name">@${esc(u)}</span>${opened ? '<span class="tag">opened</span>' : ''}<span class="date">${dateLabel}${esc(fmtDate(item.ts))}</span></div><div class="row-actions">${actions}</div></li>`;
+  actions += `<a class="btn primary" data-act="open" data-u="${esc(u)}" href="${esc(profileUrl(u))}" target="_blank" rel="noopener noreferrer">Open profile${OPEN_ICON}<span class="vh"> of @${esc(u)} (opens in a new tab)</span></a>`;
+  return `<li class="row${mode === 'dfb' ? ' marks' : ''}">${avatar(u)}<div class="who"><span class="name">@${esc(u)}</span>${opened ? '<span class="tag">opened</span>' : ''}<span class="date">${sub}</span></div><div class="row-actions">${actions}</div></li>`;
 }
 
 function renderList(key, items, mode, emptyText) {
   const el = $(`[data-list="${key}"]`);
   const total = items.length;
   const pages = Math.max(1, Math.ceil(total / PAGE_SIZE));
-  const page = state.pages[key] = Math.min(state.pages[key], pages - 1);
+  const page = state.pages[key] = Math.min(state.pages[key] || 0, pages - 1);
   if (!total) { el.innerHTML = `<p class="empty">${esc(state.query ? 'No usernames match your search.' : emptyText)}</p>`; return; }
   const start = page * PAGE_SIZE;
   const slice = items.slice(start, start + PAGE_SIZE);
@@ -739,9 +918,7 @@ function renderList(key, items, mode, emptyText) {
   }
   el.innerHTML = html;
 }
-function listLabel(key) {
-  return { main: "Don't follow you back", done: 'Done', keep: 'Keep', idfb: "You don't follow back", mutual: 'Mutuals' }[key];
-}
+function listLabel(key) { return LIST_LABEL[key] || key; }
 
 function render() {
   const d = state.data;
@@ -751,13 +928,14 @@ function render() {
     const s = progress[it.u];
     (s === 'done' ? done : s === 'keep' ? keep : main).push(it);
   }
-  $('#stats').innerHTML = [
+  const reviewed = d.dfb.length - main.length;
+  const pct = d.dfb.length ? Math.round((reviewed / d.dfb.length) * 100) : 100;
+  $('#stats').innerHTML = `<div class="card stat hl"><dt>Don't follow me back</dt><dd>${nf.format(d.dfb.length)}<span class="sub">${nf.format(main.length)} left to review${reviewed ? ` · ${nf.format(reviewed)} sorted` : ''}</span><span class="prog"><i style="width:${pct}%"></i></span></dd></div>` + [
     ['Followers', d.followers.size],
     ['Following', d.following.size],
     ['Mutuals', d.mutual.length],
-    ["Don't follow me back", d.dfb.length, `${nf.format(main.length)} left to review`, true],
     ["I don't follow back", d.idfb.length],
-  ].map(([label, n, sub, hl]) => `<div class="card stat${hl ? ' hl' : ''}"><dt>${label}</dt><dd>${nf.format(n)}${sub ? `<span class="sub">${sub}</span>` : ''}</dd></div>`).join('');
+  ].map(([label, n]) => `<div class="card stat"><dt>${label}</dt><dd>${nf.format(n)}</dd></div>`).join('');
 
   $('#n-dfb').textContent = nf.format(main.length);
   $('#n-idfb').textContent = nf.format(d.idfb.length);
@@ -767,8 +945,11 @@ function render() {
   $('#sec-done').hidden = state.hideDK;
   $('#sec-keep').hidden = state.hideDK;
 
-  if (state.tab === 'dfb') {
-    renderList('main', sorted(main), 'dfb', d.dfb.length ? 'All reviewed. Nice work!' : 'Everyone you follow follows you back.');
+  if (state.view === 'changes') renderChanges();
+  else if (state.view === 'requests' || state.view === 'lists') renderExtras(state.view);
+  else if (state.view === 'timeline') renderTimeline();
+  else if (state.tab === 'dfb') {
+    renderList('main', sorted(main), 'dfb', d.dfb.length ? '🎉 All reviewed. Nice work!' : 'Everyone you follow follows you back.');
     renderList('done', sorted(done), 'dfb', 'Nothing marked Done yet.');
     renderList('keep', sorted(keep), 'dfb', 'Nothing marked Keep yet.');
   } else if (state.tab === 'idfb') {
@@ -776,11 +957,217 @@ function render() {
   } else {
     renderList('mutual', sorted(d.mutual), 'mutual', 'No mutual follows.');
   }
+  renderNav();
   renderSession();
+}
+
+function renderNav() {
+  const badge = (id, n) => { const el = $(id); el.textContent = n ? nf.format(n) : ''; el.hidden = !n; };
+  badge('#n-changes', state.history[0] ? state.history[0].lost.length : 0);
+  const pending = extraList('pending');
+  badge('#n-requests', pending ? pending.length : 0);
+}
+
+/* ---- Changes view ---- */
+function renderChanges() {
+  const d = state.data, h = state.history, head = $('#chg-head');
+  let html = '';
+  if (state.changeNote === 'older') html += `<p class="note warnish">The export you just loaded looks older than the one already saved, so it wasn't recorded as a new comparison.</p>`;
+  if (state.changeNote === 'nosave') html += `<p class="note warnish">A snapshot couldn't be saved on this device (storage is blocked or full), so changes between exports can't be tracked here.</p>`;
+  if (!h.length) {
+    html += `<p class="note">${state.snapTime ? `<b>Baseline saved</b> from your export of ${esc(df.format(new Date(state.snapTime)))}. ` : ''}To see who unfollowed you, request a fresh export from Instagram in a few days or weeks and load it here on this same device and browser. This section will then list who's gone and who's new since the baseline.</p>`;
+    head.innerHTML = html;
+    $('#chg-lists').hidden = true;
+    return;
+  }
+  $('#chg-lists').hidden = false;
+  const idx = state.chgIdx = Math.min(state.chgIdx, h.length - 1);
+  const rec = h[idx];
+  const range = (r) => `${df.format(new Date(r.from))} → ${df.format(new Date(r.to))}`;
+  html += '<div class="chg-bar">';
+  if (h.length > 1) {
+    html += `<label class="field"><span>Comparison</span><select id="chg-pick">${h.map((r, i) => `<option value="${i}"${i === idx ? ' selected' : ''}>${esc(range(r))}</option>`).join('')}</select></label>`;
+  } else html += `<p class="muted small" style="margin:0">Comparing your exports: <b>${esc(range(rec))}</b></p>`;
+  if (idx === 0) html += `<button type="button" id="chg-del" class="danger">Delete this comparison</button>`;
+  html += '</div>';
+  const before = (state.data.followers.size - rec.gained.length + rec.lost.length) || 0;
+  if (idx === 0 && before > 20 && rec.lost.length > before / 2) html += `<p class="note warnish">More than half your followers show as gone. If you loaded only some of the <code>followers_N.json</code> files, delete this comparison and load the complete export.</p>`;
+  html += `<p class="muted small">An account also appears as "unfollowed you" if it was deactivated, changed its username, or blocked you.</p>`;
+  head.innerHTML = html;
+
+  const lists = {
+    'chg-lost': rec.lost.map((u) => ({ u, ts: 0, note: d.following.has(u) ? 'You still follow them' : "You don't follow them" })),
+    'chg-gained': rec.gained.map((u) => (d.followers.has(u) ? { u, ts: d.followers.get(u) } : { u, ts: 0, note: 'No longer follows you' })),
+    'chg-unfollowed': rec.unfollowed.map((u) => ({ u, ts: 0, note: d.followers.has(u) ? 'Still follows you' : "Doesn't follow you" })),
+    'chg-followed': rec.followed.map((u) => (d.following.has(u) ? { u, ts: d.following.get(u) } : { u, ts: 0, note: 'You no longer follow them' })),
+  };
+  for (const key in lists) {
+    $('#n-' + key).textContent = nf.format(lists[key].length);
+    renderList(key, sorted(lists[key]), key, 'Nobody in this period.');
+  }
+}
+
+/* ---- Requests and Other lists views ---- */
+function buildExtraViews() {
+  for (const view of ['requests', 'lists']) {
+    let first = true;
+    $('#view-' + view).innerHTML = EXTRA.filter((x) => x.view === view).map((x) => {
+      const html = `<details class="card sec${first ? ' sec-first' : ''}"${x.open ? ' open' : ''}><summary>${esc(x.title)} (<span id="n-${x.kind}">–</span>)</summary>${x.desc ? `<p class="muted small desc">${esc(x.desc)}</p>` : ''}<div class="card list" data-list="${x.kind}"></div></details>`;
+      first = false;
+      return html;
+    }).join('');
+  }
+}
+function renderExtras(view) {
+  for (const x of EXTRA) {
+    if (x.view !== view) continue;
+    const items = extraList(x.kind);
+    $('#n-' + x.kind).textContent = items ? nf.format(items.length) : '–';
+    if (!items) {
+      $(`[data-list="${x.kind}"]`).innerHTML = `<p class="empty">Not loaded. This comes from <code>${esc(x.file)}</code> in the same folder of your export; load the whole .zip to include it.</p>`;
+    } else renderList(x.kind, sorted(items), x.kind, 'Nobody on this list.');
+  }
+}
+
+/* ---- Timeline view ---- */
+const MONTHS = ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'];
+function niceMax(v) {
+  if (v <= 4) return 4;
+  const pow = Math.pow(10, Math.floor(Math.log10(v)));
+  for (const m of [1, 2, 4, 5, 8, 10]) if (v <= m * pow) return m * pow;
+  return 10 * pow;
+}
+function barPath(x, y, w, h) {
+  const r = Math.min(4, w / 2, h);
+  return `M${x},${y + h}V${y + r}Q${x},${y} ${x + r},${y}H${x + w - r}Q${x + w},${y} ${x + w},${y + r}V${y + h}Z`;
+}
+function renderTimeline() {
+  const el = $('#view-timeline'), d = state.data;
+  const toMs = (ts) => (ts > 1e12 ? ts : ts * 1000);
+  const fol = [...d.followers].filter(([, ts]) => ts).map(([u, ts]) => ({ u, t: toMs(ts) }));
+  const fing = [...d.following].filter(([, ts]) => ts).map(([u, ts]) => ({ u, t: toMs(ts) }));
+  if (!fol.length && !fing.length) { el.innerHTML = '<p class="card empty">This export has no dates to chart.</p>'; return; }
+  const all = fol.concat(fing);
+  let min = Infinity, max = -Infinity;
+  for (const x of all) { if (x.t < min) min = x.t; if (x.t > max) max = x.t; }
+  const idxMonth = (t) => { const dt = new Date(t); return dt.getFullYear() * 12 + dt.getMonth(); };
+  const span = idxMonth(max) - idxMonth(min) + 1;
+  const gran = state.tlGran === 'auto' ? (span > 30 ? 'year' : 'month') : state.tlGran;
+  const idx = gran === 'year' ? (t) => new Date(t).getFullYear() : idxMonth;
+  const i0 = idx(min), n = idx(max) - i0 + 1;
+  const label = (i) => (gran === 'year' ? String(i0 + i) : `${MONTHS[(i0 + i) % 12]} ${Math.floor((i0 + i) / 12)}`);
+  const short = (i) => (gran === 'year' ? String(i0 + i) : `${MONTHS[(i0 + i) % 12]} ’${String(Math.floor((i0 + i) / 12)).slice(2)}`);
+  const a = new Array(n).fill(0), b = new Array(n).fill(0);
+  for (const x of fol) a[idx(x.t) - i0]++;
+  for (const x of fing) b[idx(x.t) - i0]++;
+
+  // geometry
+  const axisW = 40, padL = 4, padR = 8, padT = 16, plotH = 200, padB = 26;
+  const avail = Math.max(200, (el.clientWidth || 600) - 30 - axisW - padL - padR);
+  const gw = Math.max(26, Math.floor(avail / n));
+  const bw = Math.max(6, Math.min(18, Math.floor((gw - 8) / 2) - 1));
+  const W = padL + gw * n + padR, H = padT + plotH + padB;
+  const top = niceMax(Math.max(1, ...a, ...b));
+  const y = (v) => padT + plotH - (v / top) * plotH;
+  const every = Math.ceil((gran === 'year' ? 36 : 50) / gw);
+  const showVals = gw >= 46;
+  let svg = `<svg width="${W}" height="${H}" viewBox="0 0 ${W} ${H}" role="img" aria-label="Bar chart: followers gained and accounts you followed per ${gran}. The same numbers are in the table below.">`;
+  let axis = `<svg class="yaxis" width="${axisW}" height="${H}" aria-hidden="true">`;
+  for (let k = 0; k <= 4; k++) {
+    const v = (top / 4) * k, yy = Math.round(y(v)) + .5;
+    svg += `<line class="grid" x1="0" x2="${W}" y1="${yy}" y2="${yy}"/>`;
+    axis += `<text x="${axisW - 6}" y="${yy + 4}" text-anchor="end">${nf.format(v)}</text>`;
+  }
+  axis += '</svg>';
+  for (let i = 0; i < n; i++) {
+    const gx = padL + i * gw, cx = gx + gw / 2;
+    svg += `<rect class="hit" data-i="${i}" x="${gx}" y="${padT - 8}" width="${gw}" height="${plotH + 8}"/>`;
+    if (a[i]) svg += `<path class="bar" fill="var(--series-1)" d="${barPath(cx - bw - 1, y(a[i]), bw, y(0) - y(a[i]))}"/>`;
+    if (b[i]) svg += `<path class="bar" fill="var(--series-2)" d="${barPath(cx + 1, y(b[i]), bw, y(0) - y(b[i]))}"/>`;
+    if (showVals) {
+      if (a[i]) svg += `<text class="val" x="${cx - 1 - bw / 2}" y="${y(a[i]) - 4}" text-anchor="middle">${nf.format(a[i])}</text>`;
+      if (b[i]) svg += `<text class="val" x="${cx + 1 + bw / 2}" y="${y(b[i]) - 4}" text-anchor="middle">${nf.format(b[i])}</text>`;
+    }
+    if (i % every === 0) svg += `<text x="${cx}" y="${H - 8}" text-anchor="middle">${esc(short(i))}</text>`;
+  }
+  svg += '</svg>';
+
+  const oldest = (arr) => arr.reduce((m, x) => (!m || x.t < m.t ? x : m), null);
+  const of = oldest(fol), og = oldest(fing);
+  const peak = a.indexOf(Math.max(...a));
+  const facts = [];
+  if (of) facts.push(`Your longest-standing follower is <b>@${esc(of.u)}</b>, since ${esc(df.format(new Date(of.t)))}.`);
+  if (og) facts.push(`The account you've followed longest is <b>@${esc(og.u)}</b>, since ${esc(df.format(new Date(og.t)))}.`);
+  if (fol.length && n > 1) facts.push(`Most of today's followers arrived in <b>${esc(label(peak))}</b> (${nf.format(a[peak])}).`);
+  const undated = d.followers.size + d.following.size - fol.length - fing.length;
+
+  el.innerHTML = `<div class="card viz">
+    <div class="viz-head">
+      <div><h2 style="margin:0 0 4px">When your current connections started</h2>
+        <ul class="legend"><li><i style="background:var(--series-1)"></i>Followers gained</li><li><i style="background:var(--series-2)"></i>Accounts you followed</li></ul></div>
+      <label class="field"><span>Group by</span><select id="tl-gran">
+        <option value="auto"${state.tlGran === 'auto' ? ' selected' : ''}>Auto</option>
+        <option value="year"${state.tlGran === 'year' ? ' selected' : ''}>Year</option>
+        <option value="month"${state.tlGran === 'month' ? ' selected' : ''}>Month</option></select></label>
+    </div>
+    <div class="chart-row">${axis}<div class="chart-scroll" id="tl-chart">${svg}<div class="tip" id="tl-tip" hidden></div></div></div>
+    <ul class="facts">${facts.map((f) => `<li>${f}</li>`).join('')}</ul>
+    <p class="muted small" style="margin:12px 0 0">Only accounts on your lists today are counted: anyone who has since unfollowed you, or whom you unfollowed, isn't in the export.${undated ? ` ${nf.format(undated)} entries had no date.` : ''}</p>
+  </div>
+  <details class="card sec"><summary>View as table</summary>
+    <table class="tbl"><thead><tr><th scope="col">${gran === 'year' ? 'Year' : 'Month'}</th><th scope="col">Followers gained</th><th scope="col">Accounts you followed</th></tr></thead>
+    <tbody>${a.map((v, i) => `<tr><td>${esc(label(i))}</td><td>${nf.format(v)}</td><td>${nf.format(b[i])}</td></tr>`).join('')}</tbody></table>
+  </details>`;
+
+  // hover / tap tooltip (values are also in the table, so this only enhances)
+  const wrap = $('#tl-chart'), tip = $('#tl-tip');
+  const row = (color, value, text) => {
+    const r = document.createElement('div'); r.className = 'r';
+    const k = document.createElement('i'); k.style.background = color;
+    const s = document.createElement('strong'); s.textContent = nf.format(value);
+    r.append(k, s, document.createTextNode(text));
+    return r;
+  };
+  const show = (e) => {
+    const hit = e.target.closest('.hit');
+    wrap.querySelectorAll('.hit.on').forEach((x) => x.classList.remove('on'));
+    if (!hit) { tip.hidden = true; return; }
+    hit.classList.add('on');
+    const i = Number(hit.dataset.i);
+    tip.textContent = '';
+    const t = document.createElement('b'); t.className = 't'; t.textContent = label(i);
+    tip.append(t, row('var(--series-1)', a[i], 'followers gained'), row('var(--series-2)', b[i], 'accounts you followed'));
+    tip.hidden = false;
+    const box = wrap.getBoundingClientRect();
+    const px = e.clientX - box.left + wrap.scrollLeft, tw = tip.offsetWidth;
+    const viewRight = wrap.scrollLeft + wrap.clientWidth;
+    tip.style.left = Math.max(wrap.scrollLeft + 4, Math.min(px + 12, viewRight - tw - 4)) + 'px';
+    tip.style.top = Math.max(0, e.clientY - box.top - tip.offsetHeight - 10) + 'px';
+  };
+  wrap.addEventListener('pointermove', show);
+  wrap.addEventListener('pointerdown', show);
+  wrap.addEventListener('pointerleave', () => { tip.hidden = true; wrap.querySelectorAll('.hit.on').forEach((x) => x.classList.remove('on')); });
+  if (wrap.scrollWidth > wrap.clientWidth) wrap.scrollLeft = wrap.scrollWidth; // start at the most recent period
+}
+
+function setView(v) {
+  state.view = v;
+  for (const b of document.querySelectorAll('.view-btn')) {
+    const on = b.dataset.view === v;
+    if (on) b.setAttribute('aria-current', 'page'); else b.removeAttribute('aria-current');
+    $('#view-' + b.dataset.view).hidden = !on;
+  }
+  const cur = $('.view-btn[aria-current="page"]');
+  if (cur && cur.scrollIntoView) cur.scrollIntoView({ block: 'nearest', inline: 'nearest' });
+  $('#toolbar').hidden = v === 'timeline';
+  $('#hide-dk-wrap').hidden = v !== 'followback';
+  render();
 }
 
 function renderSession() {
   $('#opened-count').textContent = nf.format(session.count);
+  $('#meter').classList.toggle('full', session.count >= WARN_AT);
+  $('#meter').firstElementChild.style.width = Math.min(100, (session.count / WARN_AT) * 100) + '%';
   const w = $('#warn');
   if (session.count >= WARN_AT) {
     w.textContent = `You've opened ${session.count} profiles this session. Consider taking a break for a while: Instagram can temporarily limit accounts that unfollow lots of people quickly. Your progress is saved, so you can pick up later.`;
@@ -830,16 +1217,30 @@ window.addEventListener('drop', async (e) => {
 });
 
 document.addEventListener('click', (e) => {
-  const t = e.target.closest('[data-act], [data-pager], #clear');
+  const t = e.target.closest('[data-act], [data-pager], [data-view], #clear, #chg-del, #wipe');
   if (!t) return;
   if (t.id === 'clear') {
     state.sources.clear(); state.data = null;
     saveLists(); renderLoaded(); showError(''); showStatus(''); showResults(false); fileInput.focus();
     return;
   }
+  if (t.dataset.view) { setView(t.dataset.view); return; }
+  if (t.id === 'chg-del') {
+    if (confirm('Delete this comparison? The saved snapshot goes back to the earlier export, so you can load the right files again.')) { undoLatestChange(); render(); announce('Comparison deleted.'); }
+    return;
+  }
+  if (t.id === 'wipe') {
+    if (!confirm("Delete everything this page has saved on this device? That's your loaded lists, the snapshot and change history, and your Done/Keep progress.")) return;
+    const s = localStore();
+    for (const k of [LS_KEY, LISTS_KEY, SNAP_KEY, HIST_KEY]) { try { s && s.removeItem(k); } catch {} }
+    progress = {}; state.sources.clear(); state.data = null; state.history = []; state.snapTime = 0; state.changeNote = '';
+    session.count = 0; openedSet.clear(); saveSession();
+    renderLoaded(); showError(''); showStatus('Everything saved on this device was deleted.'); showResults(false);
+    return;
+  }
   if (t.dataset.pager) {
     const key = t.dataset.pager;
-    state.pages[key] += Number(t.dataset.dir);
+    state.pages[key] = (state.pages[key] || 0) + Number(t.dataset.dir);
     render();
     const list = $(`[data-list="${key}"]`);
     const first = list.querySelector('.row a, .row input');
@@ -861,6 +1262,8 @@ document.addEventListener('auxclick', (e) => {
 document.addEventListener('change', (e) => {
   const t = e.target;
   if (t.dataset && t.dataset.act === 'done') setStatusFor(t.dataset.u, t.checked ? 'done' : null, t);
+  else if (t.id === 'chg-pick') { state.chgIdx = Number(t.value); render(); $('#chg-pick') && $('#chg-pick').focus(); }
+  else if (t.id === 'tl-gran') { state.tlGran = t.value; render(); $('#tl-gran').focus(); }
 });
 
 function countOpen(u, el) {
@@ -968,6 +1371,7 @@ tabs.forEach((t, i) => {
   });
 });
 
+buildExtraViews();
 restoreLists();
 
 // Expose pure helpers for testing from the console.

@@ -1,0 +1,6 @@
+{
+  "relationships_close_friends": [
+    { "title": "alice", "string_list_data": [ { "href": "https://www.instagram.com/_u/alice", "timestamp": 1650000000 } ] },
+    { "title": "erin", "string_list_data": [ { "href": "https://www.instagram.com/_u/erin", "timestamp": 1655000000 } ] }
+  ]
+}
